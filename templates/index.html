@@ -3,346 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOODBOARD — Vibe Tracker + AI</title>
+    <title>MOODBOARD v3 — Vibe Intelligence</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <!-- ═══ ANIMATED BACKGROUND ═══ -->
-    <div class="bg-grid"></div>
-    <div class="aurora"></div>
-    <div class="floating-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-        <div class="orb orb-5"></div>
-    </div>
 
-    <!-- ═══ NAV BAR ═══ -->
-    <nav class="navbar">
+    <!-- ═══ PARTICLE CANVAS ═══ -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- ═══ MESH GRADIENT BG ═══ -->
+    <div class="mesh-gradient"></div>
+    <div class="noise-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- ═══ CURSOR GLOW ═══ -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- ═══ NAVBAR ═══ -->
+    <nav class="navbar glass">
         <div class="nav-brand">
-            <span class="brand-icon">◐</span>
-            <span class="brand-text">MOODBOARD</span>
-            <span class="brand-tag">v2.0</span>
+            <div class="brand-logo">
+                <div class="logo-ring"></div>
+                <div class="logo-ring ring-2"></div>
+                <span class="logo-core">M</span>
+            </div>
+            <div class="brand-info">
+                <span class="brand-text">MOODBOARD</span>
+                <span class="brand-version">v3.0 · AI</span>
+            </div>
         </div>
-        <div class="nav-links">
-            <button class="nav-btn active" data-section="dashboard" onclick="switchSection('dashboard')">
-                <span class="nav-icon">◧</span> Dashboard
+
+        <div class="nav-center">
+            <button class="nav-pill active" data-section="dashboard" onclick="switchSection('dashboard')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Dashboard</span>
             </button>
-            <button class="nav-btn" data-section="log" onclick="switchSection('log')">
-                <span class="nav-icon">◈</span> Log Mood
+            <button class="nav-pill" data-section="log" onclick="switchSection('log')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                <span>Log Mood</span>
             </button>
-            <button class="nav-btn" data-section="chat" onclick="switchSection('chat')">
-                <span class="nav-icon">◉</span> AI Chat
-                <span class="chat-pulse"></span>
+            <button class="nav-pill" data-section="chat" onclick="switchSection('chat')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <span>AI Chat</span>
+                <span class="live-dot"></span>
             </button>
-            <button class="nav-btn" data-section="stats" onclick="switchSection('stats')">
-                <span class="nav-icon">◫</span> Analytics
+            <button class="nav-pill" data-section="insights" onclick="switchSection('insights')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Insights</span>
             </button>
+            <div class="nav-pill-bg" id="navPillBg"></div>
         </div>
-        <div class="nav-status">
-            <span class="status-dot"></span>
-            <span class="status-text">{{ total_entries }} vibes logged</span>
+
+        <div class="nav-right">
+            <div class="streak-badge" id="streakBadge">
+                <span class="streak-fire">🔥</span>
+                <span class="streak-count" id="navStreak">0</span>
+            </div>
         </div>
     </nav>
 
-    <!-- ═══ MAIN CONTENT ═══ -->
-    <main class="main-container">
+    <!-- ═══ MAIN ═══ -->
+    <main class="main">
 
-        <!-- ──── DASHBOARD SECTION ──── -->
+        <!-- ────── DASHBOARD ────── -->
         <section id="dashboard" class="section active">
-            <div class="section-header">
-                <h1 class="glitch-text" data-text="YOUR VIBES">YOUR VIBES</h1>
-                <p class="section-sub">Real-time emotional intelligence dashboard</p>
+            <div class="hero-header">
+                <div class="hero-tag">EMOTIONAL INTELLIGENCE</div>
+                <h1 class="hero-title">
+                    <span class="hero-line">Your Vibe</span>
+                    <span class="hero-line gradient-text">Dashboard</span>
+                </h1>
+                <p class="hero-sub">Real-time mood analytics powered by MongoDB + AI</p>
             </div>
 
-            <!-- Quick Stats Cards -->
-            <div class="quick-stats" id="quickStats">
-                <div class="stat-card stat-total">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-value" id="statTotal">--</div>
-                    <div class="stat-label">Total Entries</div>
-                    <div class="stat-glow"></div>
+            <!-- Bento Grid Stats -->
+            <div class="bento-grid">
+                <div class="bento-card bento-large card-glow" id="bentoTotal">
+                    <div class="bento-icon-wrap">
+                        <div class="bento-icon-bg"></div>
+                        <span class="bento-icon">📊</span>
+                    </div>
+                    <div class="bento-value" id="statTotal">--</div>
+                    <div class="bento-label">Total Vibes Logged</div>
+                    <div class="bento-sparkline" id="sparklineTotal"></div>
                 </div>
-                <div class="stat-card stat-streak">
-                    <div class="stat-icon">🔥</div>
-                    <div class="stat-value" id="statStreak">--</div>
-                    <div class="stat-label">Day Streak</div>
-                    <div class="stat-glow"></div>
+
+                <div class="bento-card card-glow" id="bentoStreak">
+                    <div class="bento-icon-wrap">
+                        <div class="bento-icon-bg bg-pink"></div>
+                        <span class="bento-icon">🔥</span>
+                    </div>
+                    <div class="bento-value" id="statStreak">--</div>
+                    <div class="bento-label">Day Streak</div>
                 </div>
-                <div class="stat-card stat-top">
-                    <div class="stat-icon">👑</div>
-                    <div class="stat-value" id="statTopMood">--</div>
-                    <div class="stat-label">Top Mood</div>
-                    <div class="stat-glow"></div>
+
+                <div class="bento-card card-glow" id="bentoSentiment">
+                    <div class="bento-icon-wrap">
+                        <div class="bento-icon-bg bg-teal"></div>
+                        <span class="bento-icon">💚</span>
+                    </div>
+                    <div class="bento-value" id="statSentiment">--%</div>
+                    <div class="bento-label">Positive Ratio</div>
+                    <div class="sentiment-ring" id="sentimentRing">
+                        <svg viewBox="0 0 36 36">
+                            <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="ring-fill" id="ringFill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="stat-card stat-intensity">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-value" id="statIntensity">--</div>
-                    <div class="stat-label">Avg Intensity</div>
-                    <div class="stat-glow"></div>
+
+                <div class="bento-card card-glow" id="bentoTop">
+                    <div class="bento-icon-wrap">
+                        <div class="bento-icon-bg bg-gold"></div>
+                        <span class="bento-icon">👑</span>
+                    </div>
+                    <div class="bento-value" id="statTopMood">--</div>
+                    <div class="bento-label">Dominant Mood</div>
+                </div>
+
+                <div class="bento-card card-glow" id="bentoIntensity">
+                    <div class="bento-icon-wrap">
+                        <div class="bento-icon-bg bg-purple"></div>
+                        <span class="bento-icon">⚡</span>
+                    </div>
+                    <div class="bento-value" id="statIntensity">--</div>
+                    <div class="bento-label">Avg Intensity</div>
                 </div>
             </div>
 
             <!-- Trend Banner -->
-            <div class="trend-banner" id="trendBanner">
-                <span class="trend-text">Loading your vibe report...</span>
+            <div class="trend-card glass" id="trendCard">
+                <div class="trend-icon" id="trendIcon">📊</div>
+                <div class="trend-content">
+                    <div class="trend-title" id="trendTitle">Loading vibe report...</div>
+                </div>
             </div>
 
-            <!-- Recent Entries Timeline -->
-            <div class="timeline-container">
-                <h2 class="timeline-title">Recent Vibes <span class="timeline-badge">Live</span></h2>
-                <div class="timeline" id="timeline">
+            <!-- Recent Timeline -->
+            <div class="timeline-section">
+                <div class="section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">RECENT ENTRIES</span>
+                    <span class="label-line"></span>
+                </div>
+
+                <div class="timeline-grid" id="timelineGrid">
                     {% for entry in entries %}
-                    <div class="timeline-item" style="animation-delay: {{ loop.index * 0.08 }}s">
-                        <div class="timeline-dot" data-mood="{{ entry.mood }}"></div>
-                        <div class="timeline-card">
-                            <div class="timeline-header">
-                                <span class="timeline-emoji">{{ entry.get('emoji', '🫠') }}</span>
-                                <span class="timeline-mood">{{ entry.mood }}</span>
-                                <span class="timeline-intensity">
-                                    {% for i in range(entry.get('intensity', 5)) %}●{% endfor %}{% for i in range(10 - entry.get('intensity', 5)) %}○{% endfor %}
+                    <div class="tl-card glass" style="--delay: {{ loop.index * 0.06 }}s">
+                        <div class="tl-left">
+                            <span class="tl-emoji">{{ entry.get('emoji', '🫠') }}</span>
+                            <div class="tl-bar" data-mood="{{ entry.mood }}"></div>
+                        </div>
+                        <div class="tl-content">
+                            <div class="tl-top">
+                                <span class="tl-mood">{{ entry.mood }}</span>
+                                <span class="tl-intensity-dots">
+                                    {% for i in range(entry.get('intensity', 5)) %}<span class="dot filled"></span>{% endfor %}{% for i in range(10 - entry.get('intensity', 5)) %}<span class="dot"></span>{% endfor %}
                                 </span>
                             </div>
                             {% if entry.note %}
-                            <p class="timeline-note">"{{ entry.note }}"</p>
+                            <p class="tl-note">{{ entry.note }}</p>
                             {% endif %}
-                            <div class="timeline-meta">
+                            {% if entry.get('activities') %}
+                            <div class="tl-tags">
+                                {% for act in entry.activities %}
+                                <span class="tl-tag">{{ act }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="tl-meta">
+                                <span>{{ entry.get('day_of_week', '') }}</span>
                                 <span>{{ entry.date }}</span>
                                 <span>{{ entry.get('time', '') }}</span>
                             </div>
                         </div>
                     </div>
                     {% endfor %}
+
                     {% if not entries %}
                     <div class="empty-state">
-                        <div class="empty-icon">🌱</div>
+                        <div class="empty-3d">
+                            <div class="empty-cube">
+                                <div class="cube-face front">🌱</div>
+                                <div class="cube-face back">✨</div>
+                                <div class="cube-face left">🧠</div>
+                                <div class="cube-face right">💫</div>
+                                <div class="cube-face top">🎯</div>
+                                <div class="cube-face bottom">🌈</div>
+                            </div>
+                        </div>
                         <h3>No vibes logged yet</h3>
-                        <p>Start tracking your mood to see your emotional journey here.</p>
-                        <button class="btn-primary" onclick="switchSection('log')">Log Your First Mood</button>
+                        <p>Start your emotional journey — every vibe matters.</p>
+                        <button class="btn-neon" onclick="switchSection('log')">
+                            <span>Log Your First Mood</span>
+                            <span class="btn-glow"></span>
+                        </button>
                     </div>
                     {% endif %}
                 </div>
             </div>
         </section>
 
-        <!-- ──── LOG MOOD SECTION ──── -->
+        <!-- ────── LOG MOOD ────── -->
         <section id="log" class="section">
-            <div class="section-header">
-                <h1 class="glitch-text" data-text="LOG YOUR VIBE">LOG YOUR VIBE</h1>
-                <p class="section-sub">How are you feeling right now? Be real.</p>
+            <div class="hero-header">
+                <div class="hero-tag">CAPTURE THE MOMENT</div>
+                <h1 class="hero-title">
+                    <span class="hero-line">How Are You</span>
+                    <span class="hero-line gradient-text">Feeling?</span>
+                </h1>
+                <p class="hero-sub">Select your mood, set the intensity, and let it go.</p>
             </div>
 
-            <div class="mood-selector">
-                <div class="mood-grid" id="moodGrid">
-                    <button class="mood-btn" data-mood="happy" data-emoji="😊" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😊</span>
-                        <span class="mood-btn-label">Happy</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="sad" data-emoji="😢" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😢</span>
-                        <span class="mood-btn-label">Sad</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="angry" data-emoji="😤" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😤</span>
-                        <span class="mood-btn-label">Angry</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="anxious" data-emoji="😰" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😰</span>
-                        <span class="mood-btn-label">Anxious</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="excited" data-emoji="🤩" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">🤩</span>
-                        <span class="mood-btn-label">Excited</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="calm" data-emoji="😌" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😌</span>
-                        <span class="mood-btn-label">Calm</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="tired" data-emoji="😴" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😴</span>
-                        <span class="mood-btn-label">Tired</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="loved" data-emoji="🥰" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">🥰</span>
-                        <span class="mood-btn-label">Loved</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="confused" data-emoji="😵‍💫" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">😵‍💫</span>
-                        <span class="mood-btn-label">Confused</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="productive" data-emoji="💪" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">💪</span>
-                        <span class="mood-btn-label">Productive</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="creative" data-emoji="🎨" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">🎨</span>
-                        <span class="mood-btn-label">Creative</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
-                    <button class="mood-btn" data-mood="grateful" data-emoji="🙏" onclick="selectMood(this)">
-                        <span class="mood-btn-emoji">🙏</span>
-                        <span class="mood-btn-label">Grateful</span>
-                        <div class="mood-btn-glow"></div>
-                    </button>
+            <div class="log-container">
+                <!-- Step 1: Mood Select -->
+                <div class="step-section" id="step1">
+                    <div class="step-label">
+                        <span class="step-num">01</span>
+                        <span class="step-text">Pick your vibe</span>
+                    </div>
+                    <div class="mood-hex-grid" id="moodGrid">
+                        <button class="hex-btn" data-mood="happy" data-emoji="😊" onclick="selectMood(this)">
+                            <span class="hex-emoji">😊</span><span class="hex-label">Happy</span>
+                        </button>
+                        <button class="hex-btn" data-mood="sad" data-emoji="😢" onclick="selectMood(this)">
+                            <span class="hex-emoji">😢</span><span class="hex-label">Sad</span>
+                        </button>
+                        <button class="hex-btn" data-mood="angry" data-emoji="😤" onclick="selectMood(this)">
+                            <span class="hex-emoji">😤</span><span class="hex-label">Angry</span>
+                        </button>
+                        <button class="hex-btn" data-mood="anxious" data-emoji="😰" onclick="selectMood(this)">
+                            <span class="hex-emoji">😰</span><span class="hex-label">Anxious</span>
+                        </button>
+                        <button class="hex-btn" data-mood="excited" data-emoji="🤩" onclick="selectMood(this)">
+                            <span class="hex-emoji">🤩</span><span class="hex-label">Excited</span>
+                        </button>
+                        <button class="hex-btn" data-mood="calm" data-emoji="😌" onclick="selectMood(this)">
+                            <span class="hex-emoji">😌</span><span class="hex-label">Calm</span>
+                        </button>
+                        <button class="hex-btn" data-mood="tired" data-emoji="😴" onclick="selectMood(this)">
+                            <span class="hex-emoji">😴</span><span class="hex-label">Tired</span>
+                        </button>
+                        <button class="hex-btn" data-mood="loved" data-emoji="🥰" onclick="selectMood(this)">
+                            <span class="hex-emoji">🥰</span><span class="hex-label">Loved</span>
+                        </button>
+                        <button class="hex-btn" data-mood="confused" data-emoji="😵‍💫" onclick="selectMood(this)">
+                            <span class="hex-emoji">😵‍💫</span><span class="hex-label">Confused</span>
+                        </button>
+                        <button class="hex-btn" data-mood="productive" data-emoji="💪" onclick="selectMood(this)">
+                            <span class="hex-emoji">💪</span><span class="hex-label">Productive</span>
+                        </button>
+                        <button class="hex-btn" data-mood="creative" data-emoji="🎨" onclick="selectMood(this)">
+                            <span class="hex-emoji">🎨</span><span class="hex-label">Creative</span>
+                        </button>
+                        <button class="hex-btn" data-mood="grateful" data-emoji="🙏" onclick="selectMood(this)">
+                            <span class="hex-emoji">🙏</span><span class="hex-label">Grateful</span>
+                        </button>
+                        <button class="hex-btn" data-mood="stressed" data-emoji="😫" onclick="selectMood(this)">
+                            <span class="hex-emoji">😫</span><span class="hex-label">Stressed</span>
+                        </button>
+                        <button class="hex-btn" data-mood="hopeful" data-emoji="🌟" onclick="selectMood(this)">
+                            <span class="hex-emoji">🌟</span><span class="hex-label">Hopeful</span>
+                        </button>
+                        <button class="hex-btn" data-mood="motivated" data-emoji="🚀" onclick="selectMood(this)">
+                            <span class="hex-emoji">🚀</span><span class="hex-label">Motivated</span>
+                        </button>
+                        <button class="hex-btn" data-mood="peaceful" data-emoji="🕊️" onclick="selectMood(this)">
+                            <span class="hex-emoji">🕊️</span><span class="hex-label">Peaceful</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Intensity Slider -->
-                <div class="intensity-section" id="intensitySection" style="display:none;">
-                    <label class="intensity-label">
-                        <span>Intensity Level</span>
-                        <span class="intensity-value" id="intensityDisplay">5</span>
-                    </label>
-                    <div class="slider-container">
-                        <span class="slider-label">Mild</span>
-                        <input type="range" id="intensitySlider" class="intensity-slider" min="1" max="10" value="5"
+                <!-- Step 2: Intensity -->
+                <div class="step-section hidden" id="step2">
+                    <div class="step-label">
+                        <span class="step-num">02</span>
+                        <span class="step-text">How intense?</span>
+                    </div>
+                    <div class="intensity-orb-container">
+                        <div class="intensity-orb" id="intensityOrb">
+                            <span class="orb-value" id="orbValue">5</span>
+                            <div class="orb-ring" id="orbRing"></div>
+                        </div>
+                        <input type="range" id="intensitySlider" class="neo-slider" min="1" max="10" value="5"
                             oninput="updateIntensity(this.value)">
-                        <span class="slider-label">Extreme</span>
-                    </div>
-                    <div class="intensity-bar">
-                        <div class="intensity-fill" id="intensityFill" style="width: 50%"></div>
-                    </div>
-                </div>
-
-                <!-- Note Input -->
-                <div class="note-section" id="noteSection" style="display:none;">
-                    <label class="note-label">What's on your mind? <span class="optional">(optional)</span></label>
-                    <textarea id="moodNote" class="note-input" placeholder="brain dump here... no judgment zone 🧠"
-                        maxlength="500" rows="3"></textarea>
-                    <div class="char-count"><span id="charCount">0</span>/500</div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="submit-section" id="submitSection" style="display:none;">
-                    <button class="submit-btn" id="submitBtn" onclick="submitMood()">
-                        <span class="submit-text">Lock It In</span>
-                        <span class="submit-icon">→</span>
-                        <div class="submit-ripple"></div>
-                    </button>
-                </div>
-
-                <!-- Success Animation -->
-                <div class="success-overlay" id="successOverlay">
-                    <div class="success-content">
-                        <div class="success-emoji" id="successEmoji">✓</div>
-                        <h2>Vibe Logged!</h2>
-                        <p id="successMsg">Your mood has been captured.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ──── CHAT SECTION ──── -->
-        <section id="chat" class="section">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <div class="chat-avatar">
-                        <span class="avatar-icon">◉</span>
-                        <span class="avatar-pulse"></span>
-                    </div>
-                    <div class="chat-info">
-                        <h2>MoodBot AI</h2>
-                        <span class="chat-status">
-                            <span class="status-indicator"></span>
-                            Online — ready to chat
-                        </span>
-                    </div>
-                    <button class="chat-menu-btn" onclick="clearChat()" title="Clear chat">
-                        <span>⟲</span>
-                    </button>
-                </div>
-
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message bot-message appear">
-                        <div class="message-avatar">◉</div>
-                        <div class="message-content">
-                            <div class="message-bubble">
-                                Yo! I'm your AI mood buddy. 🧠✨ I've got context on your recent vibes, 
-                                so ask me anything — mood advice, pattern analysis, or just vent. 
-                                I'm here for it. What's good?
-                            </div>
-                            <div class="message-time">Just now</div>
+                        <div class="slider-labels">
+                            <span>Barely there</span>
+                            <span>Maximum</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="chat-suggestions" id="chatSuggestions">
-                    <button class="suggestion-chip" onclick="sendSuggestion('Analyze my mood patterns')">
-                        📊 Analyze my patterns
-                    </button>
-                    <button class="suggestion-chip" onclick="sendSuggestion('Why am I feeling this way?')">
-                        🤔 Why this mood?
-                    </button>
-                    <button class="suggestion-chip" onclick="sendSuggestion('Give me a mood boost')">
-                        ⚡ Boost my mood
-                    </button>
-                    <button class="suggestion-chip" onclick="sendSuggestion('What should I do today based on my vibe?')">
-                        🎯 Vibe-based advice
-                    </button>
+                <!-- Step 3: Activities -->
+                <div class="step-section hidden" id="step3">
+                    <div class="step-label">
+                        <span class="step-num">03</span>
+                        <span class="step-text">What are you doing?</span>
+                        <span class="step-optional">optional</span>
+                    </div>
+                    <div class="activity-chips" id="activityChips">
+                        <button class="act-chip" data-activity="working" onclick="toggleActivity(this)">💻 Working</button>
+                        <button class="act-chip" data-activity="exercising" onclick="toggleActivity(this)">🏃 Exercise</button>
+                        <button class="act-chip" data-activity="socializing" onclick="toggleActivity(this)">👥 Social</button>
+                        <button class="act-chip" data-activity="reading" onclick="toggleActivity(this)">📚 Reading</button>
+                        <button class="act-chip" data-activity="gaming" onclick="toggleActivity(this)">🎮 Gaming</button>
+                        <button class="act-chip" data-activity="cooking" onclick="toggleActivity(this)">🍳 Cooking</button>
+                        <button class="act-chip" data-activity="music" onclick="toggleActivity(this)">🎵 Music</button>
+                        <button class="act-chip" data-activity="nature" onclick="toggleActivity(this)">🌿 Nature</button>
+                        <button class="act-chip" data-activity="meditation" onclick="toggleActivity(this)">🧘 Meditation</button>
+                        <button class="act-chip" data-activity="studying" onclick="toggleActivity(this)">📖 Studying</button>
+                        <button class="act-chip" data-activity="traveling" onclick="toggleActivity(this)">✈️ Travel</button>
+                        <button class="act-chip" data-activity="resting" onclick="toggleActivity(this)">🛋️ Resting</button>
+                    </div>
                 </div>
 
-                <div class="chat-input-container">
-                    <div class="chat-input-wrapper">
-                        <textarea id="chatInput" class="chat-input" placeholder="Type your message..."
-                            rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
-                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                            <span class="send-icon">↑</span>
-                        </button>
+                <!-- Step 4: Note -->
+                <div class="step-section hidden" id="step4">
+                    <div class="step-label">
+                        <span class="step-num">04</span>
+                        <span class="step-text">Brain dump</span>
+                        <span class="step-optional">optional</span>
                     </div>
-                    <p class="chat-disclaimer">AI responses are for entertainment & general wellness only</p>
+                    <div class="note-wrapper">
+                        <textarea id="moodNote" class="neo-textarea" placeholder="what's going on in that head of yours..." maxlength="500" rows="3" oninput="updateCharCount()"></textarea>
+                        <div class="note-footer">
+                            <span class="char-counter"><span id="charCount">0</span>/500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="step-section hidden" id="step5">
+                    <button class="submit-neo" id="submitBtn" onclick="submitMood()">
+                        <span class="submit-text">Lock It In</span>
+                        <svg class="submit-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        <div class="submit-loader" id="submitLoader"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success -->
+            <div class="success-screen" id="successScreen">
+                <div class="success-burst" id="successBurst"></div>
+                <div class="success-body">
+                    <div class="success-emoji-big" id="successEmoji">✓</div>
+                    <h2 class="success-title">Vibe Captured</h2>
+                    <p class="success-detail" id="successDetail"></p>
+                    <button class="btn-neon" onclick="closeSuccess()">
+                        <span>Back to Dashboard</span>
+                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- ──── STATS SECTION ──── -->
-        <section id="stats" class="section">
-            <div class="section-header">
-                <h1 class="glitch-text" data-text="ANALYTICS">ANALYTICS</h1>
-                <p class="section-sub">Deep dive into your emotional patterns</p>
+        <!-- ────── AI CHAT ────── -->
+        <section id="chat" class="section">
+            <div class="chat-wrapper">
+                <div class="chat-panel glass">
+                    <!-- Header -->
+                    <div class="chat-head">
+                        <div class="chat-ai-id">
+                            <div class="ai-avatar">
+                                <div class="ai-avatar-ring"></div>
+                                <span class="ai-avatar-icon">🧠</span>
+                            </div>
+                            <div>
+                                <div class="ai-name">MoodBot AI</div>
+                                <div class="ai-status"><span class="ai-dot"></span>Connected to your mood database</div>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="chat-act-btn" onclick="requestFullAnalysis()" title="Full Analysis">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            </button>
+                            <button class="chat-act-btn" onclick="clearChat()" title="Reset Chat">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.56-11.49L1 10"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="chat-body" id="chatMessages">
+                        <div class="msg msg-bot msg-appear">
+                            <div class="msg-avatar">🧠</div>
+                            <div class="msg-wrap">
+                                <div class="msg-bubble">
+                                    Yo! I'm MoodBot — your AI mood analyst with <strong>full access to your mood database</strong>. 🔮<br><br>
+                                    I can see your patterns, analyze your emotional trends, find your triggers, and suggest things that'll actually help based on YOUR data.<br><br>
+                                    What's good? Ask me anything about your vibes. 💬
+                                </div>
+                                <div class="msg-time">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div class="chat-chips" id="chatChips">
+                        <button class="chat-chip" onclick="sendSuggestion('Give me a full analysis of my mood patterns')">📊 Full Pattern Analysis</button>
+                        <button class="chat-chip" onclick="sendSuggestion('What are my emotional triggers?')">🔍 Find My Triggers</button>
+                        <button class="chat-chip" onclick="sendSuggestion('What activities make me happiest?')">⚡ Best Activities</button>
+                        <button class="chat-chip" onclick="sendSuggestion('When am I most emotionally stable during the day?')">⏰ Time Patterns</button>
+                        <button class="chat-chip" onclick="sendSuggestion('Suggest things I should do today based on my data')">🎯 Today\'s Plan</button>
+                        <button class="chat-chip" onclick="sendSuggestion('Am I getting better or worse emotionally?')">📈 My Trajectory</button>
+                    </div>
+
+                    <!-- Input -->
+                    <div class="chat-foot">
+                        <div class="chat-input-bar glass">
+                            <textarea id="chatInput" class="chat-textarea" placeholder="Ask about your mood patterns..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+                            <button class="chat-send" id="sendBtn" onclick="sendMessage()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            </button>
+                        </div>
+                        <p class="chat-note">MoodBot has read access to your entire mood database for personalized insights</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ────── INSIGHTS ────── -->
+        <section id="insights" class="section">
+            <div class="hero-header">
+                <div class="hero-tag">DEEP ANALYTICS</div>
+                <h1 class="hero-title">
+                    <span class="hero-line">Mood</span>
+                    <span class="hero-line gradient-text">Intelligence</span>
+                </h1>
+                <p class="hero-sub">MongoDB-powered pattern analysis of your emotional data</p>
             </div>
 
-            <div class="analytics-grid" id="analyticsGrid">
-                <!-- Mood Distribution Chart -->
-                <div class="analytics-card full-width">
-                    <h3 class="card-title">Mood Distribution</h3>
-                    <div class="chart-container" id="moodChart"></div>
+            <div class="insights-grid" id="insightsGrid">
+                <!-- Mood Distribution -->
+                <div class="insight-card glass full-width">
+                    <div class="card-head">
+                        <h3>Mood Distribution</h3>
+                        <span class="card-badge">All Time</span>
+                    </div>
+                    <div class="bars-container" id="moodBars"></div>
                 </div>
 
-                <!-- Detailed Stats -->
-                <div class="analytics-card">
-                    <h3 class="card-title">Vibe Report</h3>
-                    <div class="stats-list" id="statsList">
-                        <p class="loading-text">Loading analytics...</p>
+                <!-- Weekly Heatmap -->
+                <div class="insight-card glass">
+                    <div class="card-head">
+                        <h3>Weekly Pattern</h3>
+                        <span class="card-badge">By Day</span>
+                    </div>
+                    <div class="weekly-heatmap" id="weeklyHeatmap"></div>
+                </div>
+
+                <!-- Hourly Pattern -->
+                <div class="insight-card glass">
+                    <div class="card-head">
+                        <h3>Hourly Rhythm</h3>
+                        <span class="card-badge">24h</span>
+                    </div>
+                    <div class="hourly-chart" id="hourlyChart"></div>
+                </div>
+
+                <!-- Activity Correlations -->
+                <div class="insight-card glass full-width">
+                    <div class="card-head">
+                        <h3>Activity-Mood Correlations</h3>
+                        <span class="card-badge">AI Analyzed</span>
+                    </div>
+                    <div class="activity-grid" id="activityGrid">
+                        <p class="muted-text">Log moods with activities to see correlations</p>
                     </div>
                 </div>
 
+                <!-- Daily Trend -->
+                <div class="insight-card glass full-width">
+                    <div class="card-head">
+                        <h3>Intensity Trend (30 Days)</h3>
+                        <span class="card-badge">Timeline</span>
+                    </div>
+                    <div class="trend-chart" id="trendChart"></div>
+                </div>
+
                 <!-- Danger Zone -->
-                <div class="analytics-card danger-card">
-                    <h3 class="card-title">⚠️ Danger Zone</h3>
-                    <p class="danger-desc">Reset all mood data. This can't be undone.</p>
+                <div class="insight-card glass danger-zone">
+                    <div class="card-head">
+                        <h3>⚠️ Danger Zone</h3>
+                    </div>
+                    <p class="danger-text">Permanently delete all mood data from MongoDB. This cannot be undone.</p>
                     <button class="danger-btn" onclick="clearAllData()">
-                        Nuclear Reset 💣
+                        <span>Nuclear Reset</span>
+                        <span>💣</span>
                     </button>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Toast Notification -->
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Toast Container -->
+    <div class="toast-rail" id="toastRail"></div>
 
+    <script src="/static/particles.js"></script>
     <script src="/static/script.js"></script>
 </body>
 </html>

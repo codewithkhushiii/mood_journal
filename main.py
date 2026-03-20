@@ -1,9 +1,12 @@
+"""
+MOODBOARD v3.0 — FastAPI Backend
+MongoDB + AI-Powered Mood Analysis
+"""
+
 import os
-import json
-from datetime import date, datetime
-from collections import Counter
-from dataclasses import dataclass
+from datetime import datetime
 from contextlib import asynccontextmanager
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,98 +14,31 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
-from langchain.agents import create_agent
-from langchain.chat_models import init_chat_model
-from langchain.messages import HumanMessage
-from langgraph.checkpoint.memory import InMemorySaver
-
-load_dotenv()
-
-# ─── Data Layer ───────────────────────────────────────────────
-DATA_FILE = "mood_data.json"
-
-MOOD_EMOJIS = {
-    "happy": "😊",
-    "sad": "😢",
-    "angry": "😤",
-    "anxious": "😰",
-    "excited": "🤩",
-    "calm": "😌",
-    "tired": "😴",
-    "loved": "🥰",
-    "confused": "😵‍💫",
-    "productive": "💪",
-    "creative": "🎨",
-    "grateful": "🙏",
-}
-
-def load_data() -> list:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
-
-def save_data(data: list):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
-
-# ─── Agent Setup ──────────────────────────────────────────────
-checkpointer = InMemorySaver()
-
-model = init_chat_model(
-    "meta-llama/llama-4-scout-17b-16e-instruct",
-    model_provider="groq",
-    temperature=0.7,
+from database import (
+    connect_db, close_db, add_mood_entry, get_recent_moods,
+    get_mood_count, delete_all_moods, get_mood_distribution,
+    get_streak, get_comprehensive_analysis, get_hourly_patterns,
+    get_weekly_patterns, get_monthly_trend, get_activity_correlations,
+    MOOD_EMOJIS, MOOD_CATEGORIES,
 )
+from agent_tools import chat_with_agent
 
-SYSTEM_PROMPT = """
-**Role:** You are an AI mood buddy — high-key helpful, low-key hilarious.
-You help users understand their moods, give advice, and keep the vibes immaculate.
 
-**Voice & Tone:**
-* Charismatic, quick-witted, and sharp. You speak internet fluently.
-* Use modern slang (bet, valid, real, cooking, based, rent-free, gas) only when natural.
-* If they ask something great, tell them they're *cooking*.
-* If something's off, give a playful side-eye.
-
-**Mood Expertise:**
-* You have deep knowledge of emotional intelligence, psychology, and wellness.
-* When users share their mood, validate it, give context, and suggest micro-actions.
-* You can analyze mood patterns if given data.
-* You're like a therapist who also has a fire meme collection.
-
-**Core Rules:**
-1. Cut the fluff — get to it but keep personality maxed.
-2. No cringe corporate humor.
-3. Be a peer who knows everything, not a textbook on TikTok.
-4. Light roasts are acceptable. Heavy emotional support also available.
-5. Always end responses encouraging the user to keep tracking their moods.
-"""
-
-@dataclass
-class Context:
-    user_id: str
-
-agent = create_agent(
-    model=model,
-    checkpointer=checkpointer,
-    system_prompt=SYSTEM_PROMPT,
-    context_schema=Context,
-)
-
-# ─── FastAPI App ──────────────────────────────────────────────
+# ─── Lifespan ─────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 Mood Tracker + AI Agent is live and cooking!")
+    await connect_db()
+    print("🚀 MOODBOARD v3.0 is live!")
     yield
-    print("👋 Shutting down...")
+    await close_db()
 
+
+# ─── App Setup ────────────────────────────────────────────────
 app = FastAPI(
-    title="Mood Tracker + AI Chatbot",
-    description="Track your vibes. Chat with AI. Stay based.",
-    version="2.0.0",
+    title="MOODBOARD v3.0",
+    description="Track vibes. Analyze patterns. Chat with AI.",
+    version="3.0.0",
     lifespan=lifespan,
 )
 
@@ -114,182 +50,199 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+os.makedirs("static", exist_ok=True)
+os.makedirs("templates", exist_ok=True)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+DEFAULT_USER = "default_user"
+
+
 # ─── Pydantic Models ─────────────────────────────────────────
+class MoodEntry(BaseModel):
+    mood: str
+    note: str = ""
+    intensity: int = 5
+    tags: list[str] = []
+    activities: list[str] = []
+    user_id: str = DEFAULT_USER
+
+
 class ChatRequest(BaseModel):
     message: str
     thread_id: str = "default"
-    user_id: str = "user_1"
-    include_mood_context: bool = True
+    user_id: str = DEFAULT_USER
+    include_analysis: bool = True
+
 
 class ChatResponse(BaseModel):
     reply: str
     thread_id: str
 
-class MoodEntry(BaseModel):
-    mood: str
-    note: str = ""
-    intensity: int = 5  # 1-10 scale
-
-class MoodStats(BaseModel):
-    total_entries: int
-    most_frequent_mood: str
-    most_frequent_count: int
-    mood_distribution: dict
-    streak_days: int
-    avg_intensity: float
-    recent_trend: str
 
 # ─── Page Routes ──────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    data = load_data()
-    recent = data[-20:][::-1]  # last 20, reversed (newest first)
+    entries = await get_recent_moods(DEFAULT_USER, limit=20)
+    total = await get_mood_count(DEFAULT_USER)
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "entries": recent,
+        "entries": entries,
+        "total_entries": total,
         "mood_emojis": MOOD_EMOJIS,
-        "total_entries": len(data),
     })
 
-# ─── Mood API Routes ─────────────────────────────────────────
-@app.post("/api/mood")
-async def add_mood(entry: MoodEntry):
-    data = load_data()
-    new_entry = {
-        "date": date.today().isoformat(),
-        "time": datetime.now().strftime("%H:%M"),
-        "mood": entry.mood.lower(),
-        "note": entry.note,
-        "intensity": max(1, min(10, entry.intensity)),
-        "emoji": MOOD_EMOJIS.get(entry.mood.lower(), "🫠"),
-    }
-    data.append(new_entry)
-    save_data(data)
-    return {"status": "saved", "entry": new_entry}
 
-@app.post("/mood/form")
-async def add_mood_form(
-    mood: str = Form(...),
-    note: str = Form(""),
-    intensity: int = Form(5),
-):
-    data = load_data()
-    new_entry = {
-        "date": date.today().isoformat(),
-        "time": datetime.now().strftime("%H:%M"),
-        "mood": mood.lower(),
-        "note": note,
-        "intensity": max(1, min(10, intensity)),
-        "emoji": MOOD_EMOJIS.get(mood.lower(), "🫠"),
-    }
-    data.append(new_entry)
-    save_data(data)
-    return RedirectResponse(url="/", status_code=303)
+# ─── Mood API ────────────────────────────────────────────────
+@app.post("/api/mood")
+async def api_add_mood(entry: MoodEntry):
+    result = await add_mood_entry(
+        user_id=entry.user_id,
+        mood=entry.mood,
+        note=entry.note,
+        intensity=entry.intensity,
+        tags=entry.tags,
+        activities=entry.activities,
+    )
+    return {"status": "saved", "entry": result}
+
 
 @app.get("/api/moods")
-async def get_moods(limit: int = 50):
-    data = load_data()
-    return {"entries": data[-limit:][::-1], "total": len(data)}
+async def api_get_moods(user_id: str = DEFAULT_USER, limit: int = 50):
+    entries = await get_recent_moods(user_id, limit)
+    total = await get_mood_count(user_id)
+    return {"entries": entries, "total": total}
 
-@app.get("/api/stats")
-async def get_stats():
-    data = load_data()
-    if not data:
-        return {"message": "No data yet. Start tracking your vibes!"}
-
-    moods = [e["mood"] for e in data]
-    counter = Counter(moods)
-    most_common = counter.most_common(1)[0]
-
-    # Calculate streak
-    dates = sorted(set(e["date"] for e in data), reverse=True)
-    streak = 1
-    for i in range(len(dates) - 1):
-        d1 = date.fromisoformat(dates[i])
-        d2 = date.fromisoformat(dates[i + 1])
-        if (d1 - d2).days == 1:
-            streak += 1
-        else:
-            break
-
-    # Average intensity
-    intensities = [e.get("intensity", 5) for e in data]
-    avg_intensity = round(sum(intensities) / len(intensities), 1)
-
-    # Recent trend (last 7 entries)
-    recent = data[-7:]
-    recent_moods = [e["mood"] for e in recent]
-    positive = {"happy", "excited", "calm", "loved", "productive", "creative", "grateful"}
-    pos_count = sum(1 for m in recent_moods if m in positive)
-    if pos_count >= 5:
-        trend = "📈 Vibes are immaculate lately!"
-    elif pos_count >= 3:
-        trend = "📊 Mixed bag — keeping it balanced."
-    else:
-        trend = "📉 Rough patch — hang in there, it gets better."
-
-    return MoodStats(
-        total_entries=len(data),
-        most_frequent_mood=f"{MOOD_EMOJIS.get(most_common[0], '')} {most_common[0]}",
-        most_frequent_count=most_common[1],
-        mood_distribution={k: v for k, v in counter.most_common()},
-        streak_days=streak,
-        avg_intensity=avg_intensity,
-        recent_trend=trend,
-    )
 
 @app.delete("/api/moods")
-async def clear_moods():
-    save_data([])
-    return {"status": "cleared", "message": "Fresh start unlocked 🔓"}
+async def api_delete_moods(user_id: str = DEFAULT_USER):
+    count = await delete_all_moods(user_id)
+    return {"status": "cleared", "deleted": count}
 
-# ─── Chat API Routes ─────────────────────────────────────────
+
+# ─── Analytics API ────────────────────────────────────────────
+@app.get("/api/stats")
+async def api_stats(user_id: str = DEFAULT_USER):
+    total = await get_mood_count(user_id)
+    if total == 0:
+        return {"has_data": False, "message": "No mood data yet."}
+
+    distribution = await get_mood_distribution(user_id)
+    streak = await get_streak(user_id)
+    recent = await get_recent_moods(user_id, limit=10000)
+
+    # Compute stats
+    avg_intensity = round(
+        sum(m.get("intensity", 5) for m in recent) / max(len(recent), 1), 1
+    )
+
+    top_mood = distribution[0] if distribution else None
+
+    # Positive ratio
+    pos = sum(d["count"] for d in distribution if d["category"] == "positive")
+    sentiment = round(pos / max(total, 1) * 100, 1)
+
+    # Recent trend
+    recent_7 = recent[:7]
+    pos_recent = sum(
+        1 for m in recent_7 if m.get("category") == "positive"
+    )
+    if pos_recent >= 5:
+        trend = "📈 Vibes are immaculate lately!"
+        trend_type = "positive"
+    elif pos_recent >= 3:
+        trend = "📊 Mixed bag — riding the waves."
+        trend_type = "mixed"
+    else:
+        trend = "📉 Rough patch — but awareness is the first step."
+        trend_type = "rough"
+
+    return {
+        "has_data": True,
+        "total_entries": total,
+        "streak_days": streak,
+        "avg_intensity": avg_intensity,
+        "sentiment_ratio": sentiment,
+        "top_mood": {
+            "mood": top_mood["_id"],
+            "emoji": top_mood["emoji"],
+            "count": top_mood["count"],
+        } if top_mood else None,
+        "distribution": [
+            {
+                "mood": d["_id"],
+                "emoji": d["emoji"],
+                "count": d["count"],
+                "avg_intensity": round(d["avg_intensity"], 1),
+                "category": d["category"],
+            }
+            for d in distribution
+        ],
+        "trend": trend,
+        "trend_type": trend_type,
+    }
+
+
+@app.get("/api/analytics/hourly")
+async def api_hourly(user_id: str = DEFAULT_USER):
+    return await get_hourly_patterns(user_id)
+
+
+@app.get("/api/analytics/weekly")
+async def api_weekly(user_id: str = DEFAULT_USER):
+    return await get_weekly_patterns(user_id)
+
+
+@app.get("/api/analytics/trend")
+async def api_trend(user_id: str = DEFAULT_USER, months: int = 3):
+    return await get_monthly_trend(user_id, months)
+
+
+@app.get("/api/analytics/activities")
+async def api_activities(user_id: str = DEFAULT_USER):
+    return await get_activity_correlations(user_id)
+
+
+@app.get("/api/analytics/full")
+async def api_full_analysis(user_id: str = DEFAULT_USER):
+    return await get_comprehensive_analysis(user_id)
+
+
+# ─── Chat API ────────────────────────────────────────────────
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(req: ChatRequest):
+async def api_chat(req: ChatRequest):
     try:
-        # Optionally inject mood context
-        message_content = req.message
-        if req.include_mood_context:
-            data = load_data()
-            if data:
-                recent = data[-5:]
-                mood_summary = ", ".join(
-                    [f"{e['emoji']} {e['mood']}({e.get('intensity',5)}/10) on {e['date']}" for e in recent]
-                )
-                message_content = (
-                    f"[MOOD CONTEXT — User's recent moods: {mood_summary}]\n\n"
-                    f"User message: {req.message}"
-                )
+        # Pull full analysis from MongoDB for AI context
+        mood_context = None
+        if req.include_analysis:
+            mood_context = await get_comprehensive_analysis(req.user_id)
 
-        config = {"configurable": {"thread_id": req.thread_id}}
-        question = HumanMessage(content=message_content)
-
-        response = agent.invoke(
-            {"messages": [question]},
-            config=config,
-            context=Context(user_id=req.user_id),
+        reply = await chat_with_agent(
+            message=req.message,
+            thread_id=req.thread_id,
+            mood_context=mood_context,
         )
 
-        ai_reply = response["messages"][-1].content
-        return ChatResponse(reply=ai_reply, thread_id=req.thread_id)
+        return ChatResponse(reply=reply, thread_id=req.thread_id)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ─── Health ───────────────────────────────────────────────────
 @app.get("/api/health")
 async def health():
+    total = await get_mood_count(DEFAULT_USER)
     return {
         "status": "cooking 🍳",
-        "mood_entries": len(load_data()),
-        "agent": "online",
+        "version": "3.0.0",
+        "mood_entries": total,
+        "database": "MongoDB",
+        "ai": "Groq LLaMA 4",
     }
 
-# ─── Run ──────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     import uvicorn
-    os.makedirs("static", exist_ok=True)
-    os.makedirs("templates", exist_ok=True)
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
