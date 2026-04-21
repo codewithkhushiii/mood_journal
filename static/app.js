@@ -172,7 +172,7 @@ function resetLog() {
 
 // ─── Chat ──────────────────────────────────────
 function chatKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
 function autoResize(el) {
     el.style.height = 'auto';
@@ -180,13 +180,13 @@ function autoResize(el) {
 }
 function sendSugg(txt) {
     document.getElementById('chatInput').value = txt;
-    sendChat();
+    sendMessage();
 }
 function askFullAnalysis() {
     sendSugg('Give me a comprehensive analysis of all my mood data — every pattern, trigger, correlation, and personalized suggestions');
 }
 
-async function sendChat() {
+async function sendMessage() {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
     if (!msg || chatBusy) return;

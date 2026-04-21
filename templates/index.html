@@ -53,6 +53,10 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 <span>Insights</span>
             </button>
+            <button class="nav-pill" data-section="music" onclick="switchSection('music')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                <span>Music</span>
+            </button>
             <div class="nav-pill-bg" id="navPillBg"></div>
         </div>
 
@@ -412,12 +416,14 @@
                     <!-- Input -->
                     <div class="chat-foot">
                         <div class="chat-input-bar glass">
-                            <textarea id="chatInput" class="chat-textarea" placeholder="Ask about your mood patterns..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+                            <textarea id="chatInput" class="chat-textarea" placeholder="Ask about your mood patterns... or tap 🎤 to speak" rows="1" onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+                            <!-- ═══ VOICE BUTTON ═══ -->
+                            <button class="voice-btn" id="voiceBtn" onclick="startVoice()" title="Voice input">🎤</button>
                             <button class="chat-send" id="sendBtn" onclick="sendMessage()">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                             </button>
                         </div>
-                        <p class="chat-note">MoodBot has read access to your entire mood database for personalized insights</p>
+                        <p class="chat-note">MoodBot has read access to your entire mood database · 🎤 tap mic to speak</p>
                     </div>
                 </div>
             </div>
@@ -495,11 +501,40 @@
                 </div>
             </div>
         </section>
+
+        <!-- ────── MUSIC RECOMMENDER ────── -->
+        <section id="music" class="section">
+            <div class="hero-header">
+                <div class="hero-tag">VIBE CHECK</div>
+                <h1 class="hero-title">
+                    <span class="hero-line">Music</span>
+                    <span class="hero-line gradient-text">Recommender</span>
+                </h1>
+                <p class="hero-sub">Songs tailored to your current mood state</p>
+            </div>
+
+            <div class="music-container" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 20px;">
+                <div class="bento-card bento-large card-glow" id="musicCard">
+                    <div class="bento-icon-wrap" style="margin: 0 auto 20px;">
+                        <div class="bento-icon-bg bg-purple"></div>
+                        <span class="bento-icon">🎧</span>
+                    </div>
+                    <div id="musicContent" style="min-height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                        <div class="bento-label" style="font-size: 1.2rem;">Loading your perfect track...</div>
+                    </div>
+                    <button class="btn-neon" onclick="loadMusic()" style="margin-top: 30px;">
+                        <span>Refresh Track</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Toast Container -->
     <div class="toast-rail" id="toastRail"></div>
 
+    <!-- Scripts — particles first, then app logic -->
     <script src="/static/particles.js"></script>
     <script src="/static/script.js"></script>
 </body>

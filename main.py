@@ -14,6 +14,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from music_recommender import recommend_music
 
 from database import (
     connect_db, close_db, add_mood_entry, get_recent_moods,
@@ -86,13 +87,17 @@ class ChatResponse(BaseModel):
 async def index(request: Request):
     entries = await get_recent_moods(DEFAULT_USER, limit=20)
     total = await get_mood_count(DEFAULT_USER)
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "entries": entries,
-        "total_entries": total,
-        "mood_emojis": MOOD_EMOJIS,
-    })
-
+    
+    # Updated TemplateResponse signature
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "entries": entries,
+            "total_entries": total,
+            "mood_emojis": MOOD_EMOJIS,
+        }
+    )
 
 # ─── Mood API ────────────────────────────────────────────────
 @app.post("/api/mood")
@@ -246,3 +251,21 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+# ─── Music Recommendation API ────────────────────────────────
+@app.get("/api/music")
+async def api_music(mood: Optional[str] = None, user_id: str = DEFAULT_USER):
+    """
+    Get music recommendation based on:
+    - Direct mood input OR
+    - Latest user mood from database
+    """
+
+    # If mood not provided → fetch latest mood
+    if not mood:
+        recent = await get_recent_moods(user_id, limit=1)
+        if not recent:
+            return {"message": "No mood data available"}
+        mood = recent[0].get("mood", "calm")
+
+    return recommend_music(mood)
