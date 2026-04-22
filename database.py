@@ -29,14 +29,14 @@ async def connect_db():
     await db.moods.create_index("mood")
     await db.moods.create_index("user_id")
     await db.moods.create_index([("user_id", 1), ("created_at", -1)])
-    print(f"✅ Connected to MongoDB: {MONGODB_DB}")
+    print(f"[OK] Connected to MongoDB: {MONGODB_DB}")
 
 
 async def close_db():
     global client
     if client:
         client.close()
-        print("🔌 MongoDB connection closed")
+        print("[OK] MongoDB connection closed")
 
 
 def get_db():

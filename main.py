@@ -1,4 +1,4 @@
-"""
+﻿"""
 MOODBOARD v3.0 — FastAPI Backend
 MongoDB + AI-Powered Mood Analysis
 """
@@ -30,7 +30,7 @@ from agent_tools import chat_with_agent
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
-    print("🚀 MOODBOARD v3.0 is live!")
+    print("[OK] MOODBOARD v3.0 is live!")
     yield
     await close_db()
 

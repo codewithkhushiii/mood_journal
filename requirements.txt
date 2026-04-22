@@ -3,6 +3,7 @@ uvicorn[standard]
 python-dotenv
 jinja2
 python-multipart
+requests
 langchain
 langgraph
 langchain-groq
