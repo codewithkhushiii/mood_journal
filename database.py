@@ -29,14 +29,14 @@ async def connect_db():
     await db.moods.create_index("mood")
     await db.moods.create_index("user_id")
     await db.moods.create_index([("user_id", 1), ("created_at", -1)])
-    print(f"✅ Connected to MongoDB: {MONGODB_DB}")
+    print(f"Connected to MongoDB: {MONGODB_DB}")
 
 
 async def close_db():
     global client
     if client:
         client.close()
-        print("🔌 MongoDB connection closed")
+        print("MongoDB connection closed")
 
 
 def get_db():
@@ -128,6 +128,22 @@ async def get_mood_count(user_id: str) -> int:
 async def delete_all_moods(user_id: str):
     result = await db.moods.delete_many({"user_id": user_id})
     return result.deleted_count
+
+
+async def search_moods(user_id: str, query: str, limit: int = 50):
+    regex = {"$regex": query, "$options": "i"}
+    search_filter = {
+        "user_id": user_id,
+        "$or": [
+            {"mood": regex},
+            {"note": regex},
+            {"category": regex},
+            {"tags": regex},
+            {"activities": regex}
+        ]
+    }
+    cursor = db.moods.find(search_filter, {"_id": 0}).sort("created_at", -1).limit(limit)
+    return await cursor.to_list(length=limit)
 
 
 # ─── Advanced Analytics Aggregations ─────────────────────────

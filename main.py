@@ -20,16 +20,16 @@ from database import (
     get_mood_count, delete_all_moods, get_mood_distribution,
     get_streak, get_comprehensive_analysis, get_hourly_patterns,
     get_weekly_patterns, get_monthly_trend, get_activity_correlations,
-    MOOD_EMOJIS, MOOD_CATEGORIES,
+    search_moods, MOOD_EMOJIS, MOOD_CATEGORIES,
 )
-from agent_tools import chat_with_agent
+from agent_tools import chat_with_agent, get_music_recommendation
 
 
 # ─── Lifespan ─────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
-    print("🚀 MOODBOARD v3.0 is live!")
+    print("MOODBOARD v3.0 is live!")
     yield
     await close_db()
 
@@ -119,6 +119,12 @@ async def api_get_moods(user_id: str = DEFAULT_USER, limit: int = 50):
 async def api_delete_moods(user_id: str = DEFAULT_USER):
     count = await delete_all_moods(user_id)
     return {"status": "cleared", "deleted": count}
+
+
+@app.get("/api/search")
+async def api_search_moods(q: str, user_id: str = DEFAULT_USER, limit: int = 50):
+    entries = await search_moods(user_id, q, limit)
+    return {"entries": entries, "count": len(entries)}
 
 
 # ─── Analytics API ────────────────────────────────────────────
@@ -226,6 +232,16 @@ async def api_chat(req: ChatRequest):
 
         return ChatResponse(reply=reply, thread_id=req.thread_id)
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/recommendation/music")
+async def api_music_recommendation(user_id: str = DEFAULT_USER):
+    try:
+        mood_context = await get_comprehensive_analysis(user_id)
+        rec = await get_music_recommendation(mood_context)
+        return rec
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

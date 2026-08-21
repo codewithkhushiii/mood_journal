@@ -130,3 +130,42 @@ Here is the user's complete mood data from MongoDB:
             f"Oof, my brain glitched for a sec 😵‍💫 "
             f"Error: {str(e)[:100]}. Try again?"
         )
+
+
+async def get_music_recommendation(mood_context: dict) -> dict:
+    """
+    Get a personalized music recommendation from the AI based on mood data.
+    """
+    prompt = """
+You are a music recommendation engine. Based on the user's mood data, recommend ONE song that fits their current vibe or would help them right now.
+Return ONLY a valid JSON object in this exact format, with no markdown formatting or extra text:
+{
+  "title": "Song Title",
+  "artist": "Artist Name",
+  "reason": "A short, 1-2 sentence personalized reason for this recommendation based on their data."
+}
+
+User's mood data:
+"""
+    if mood_context and mood_context.get("has_data"):
+        prompt += json.dumps(mood_context, indent=2, default=str)
+    else:
+        prompt += "No mood data available yet. Recommend a generally uplifting song."
+
+    try:
+        response = await model.ainvoke([HumanMessage(content=prompt)])
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        return json.loads(content.strip())
+    except Exception as e:
+        print(f"Music recommendation error: {e}")
+        return {
+            "title": "Weightless",
+            "artist": "Marconi Union",
+            "reason": "We couldn't generate a personalized recommendation right now, but this track is scientifically proven to reduce anxiety."
+        }
