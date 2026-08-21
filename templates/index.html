@@ -399,17 +399,16 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
           </div>
         </div>
 
-        <label class="mix-card">
-          <div class="mix-bg" id="mixIllustration">
-            <span id="mixPlaceholderText">🖼️ Add a photo</span>
-            <input type="file" accept="image/*" id="mixInput" style="display:none">
-          </div>
+        <div class="mix-card">
+          <div class="mix-bg" id="mixIllustration" style="cursor:default; border:none;"></div>
           <div class="mix-overlay">
             <h4 id="mixTitle">Today's Suggestion</h4>
             <p id="mixReason">Loading personalized recommendation...</p>
+            <div id="audioPlayerContainer" style="margin-top: 14px; display: none;">
+              <audio id="mixAudioPlayer" controls style="width: 100%; height: 32px; border-radius: 16px; outline: none; opacity: 0.95;"></audio>
+            </div>
           </div>
-          <div class="mix-play" id="mixPlayBtn" onclick="event.preventDefault(); alert('Playing recommended song!')">▸</div>
-        </label>
+        </div>
       </div>
 
       <div class="banner">
@@ -566,15 +565,33 @@ document.addEventListener('click', (e) => {
 /* ── Music Recommendation ── */
 async function loadMusicRecommendation() {
     try {
-        const res = await fetch(`/api/recommendation/music`);
+        const res = await fetch(`/api/music`);
         const data = await res.json();
         const titleEl = document.getElementById('mixTitle');
         const reasonEl = document.getElementById('mixReason');
-        if (titleEl && data.title && data.artist) {
-            titleEl.textContent = `${data.title} - ${data.artist}`;
+        if (titleEl && data.song && data.song.title && data.song.artist) {
+            titleEl.textContent = `${data.song.title} - ${data.song.artist}`;
         }
-        if (reasonEl && data.reason) {
-            reasonEl.textContent = data.reason;
+        if (reasonEl && data.message) {
+            reasonEl.textContent = data.message;
+        }
+        
+        if (data.song && data.song.album_art) {
+            const bgEl = document.getElementById('mixIllustration');
+            bgEl.innerHTML = '';
+            
+            let img = document.createElement('img');
+            img.src = data.song.album_art;
+            bgEl.appendChild(img);
+        }
+        
+        if (data.song && data.song.preview_url) {
+            const playerContainer = document.getElementById('audioPlayerContainer');
+            const audioPlayer = document.getElementById('mixAudioPlayer');
+            if (playerContainer && audioPlayer) {
+                audioPlayer.src = data.song.preview_url;
+                playerContainer.style.display = 'block';
+            }
         }
     } catch (err) {
         console.error('Music recommendation failed', err);
@@ -587,6 +604,7 @@ async function loadMusicRecommendation() {
 function wireImagePlaceholder(labelId, inputId, placeholderTextId){
   const label = document.getElementById(labelId);
   const input = document.getElementById(inputId);
+  if(!label || !input) return;
   input.addEventListener('change', () => {
     const file = input.files[0];
     if(!file) return;
@@ -601,7 +619,6 @@ function wireImagePlaceholder(labelId, inputId, placeholderTextId){
 }
 wireImagePlaceholder('avatarLabel','avatarInput','avatarPlaceholder');
 wireImagePlaceholder('heroIllustration','heroInput','heroPlaceholderText');
-wireImagePlaceholder('mixIllustration','mixInput','mixPlaceholderText');
 
 /* ── Sentiment ring ── */
 window.addEventListener('DOMContentLoaded', () => {
