@@ -12,6 +12,7 @@ MOODJOURNAL is a full-stack mood tracking application featuring a high-performan
 - **Advanced Analytics:** Discover emotional patterns through daily streaks, sentiment ratios, hourly/weekly breakdowns, and activity-mood correlations.
 - **AI Mood Companion (MoodBot):** Chat with a built-in AI therapist/peer that has secure, full access to your mood database for highly personalized insights and pattern recognition.
 - **iTunes Music Recommendations:** Get instant, mood-matched song suggestions powered by Apple's free iTunes Search API — no account, no API key, no cost.
+- **User Authentication & Profiles:** Secure multi-user support with bcrypt password hashing, session cookies, and personalized profiles including avatar uploads.
 - **Asynchronous Architecture:** Built with `motor` and `FastAPI` for non-blocking, high-speed database queries and API responses.
 
 ---
@@ -21,6 +22,7 @@ MOODJOURNAL is a full-stack mood tracking application featuring a high-performan
 | Layer | Technology |
 |---|---|
 | **Backend** | FastAPI, Python 3.x, Pydantic |
+| **Authentication** | bcrypt, itsdangerous (Session Cookies) |
 | **Database** | MongoDB (Async via Motor) |
 | **AI / LLM** | LangChain, LangGraph, Groq API (Meta LLaMA 4 Scout) |
 | **Music API** | Apple iTunes Search API (free, no key needed) |
@@ -38,11 +40,13 @@ mood_journal/
 │   ├── script.js            # Additional UI interactions
 │   └── style.css            # Styling
 ├── templates/
-│   └── index.html           # Main dashboard UI
+│   ├── index.html           # Main dashboard UI
+│   └── login.html           # User authentication UI
 ├── .env                     # Environment variables (not committed)
 ├── .gitignore
 ├── README.md
 ├── agent_tools.py           # LangChain agent and MoodBot personality
+├── auth.py                  # User authentication and session management
 ├── database.py              # MongoDB connection and aggregation pipelines
 ├── main.py                  # FastAPI application and route definitions
 ├── mood_data.json           # Seed data or local backup
@@ -192,6 +196,7 @@ graph TD
 | `MONGODB_URI` | ✅ Yes | MongoDB connection string |
 | `MONGODB_DB` | ✅ Yes | MongoDB database name |
 | `GROQ_API_KEY` | ✅ Yes | Groq API key for LLaMA 4 |
+| `SECRET_KEY` | ❌ No | Secret key for signing session cookies |
 
 > 🎵 No music API keys are needed. iTunes Search is free and open.
 
