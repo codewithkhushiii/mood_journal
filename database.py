@@ -1,12 +1,14 @@
 """
-MongoDB Database Layer — Async with Motor
+database.py — MongoDB Database Layer (Async with Motor)
 Handles all CRUD + advanced aggregation queries for mood analysis.
+Includes user management for auth system.
 """
 
 import os
 from datetime import datetime, timedelta, date
 from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,11 +26,19 @@ async def connect_db():
     client = AsyncIOMotorClient(MONGODB_URI)
     db = client[MONGODB_DB]
 
-    # Create indexes for fast queries
+    # Mood indexes
     await db.moods.create_index("date")
     await db.moods.create_index("mood")
     await db.moods.create_index("user_id")
     await db.moods.create_index([("user_id", 1), ("created_at", -1)])
+
+    # User indexes
+    await db.users.create_index("email", unique=True)
+    await db.users.create_index("username", unique=True)
+
+    # Ensure uploads directory exists
+    os.makedirs("static/uploads", exist_ok=True)
+
     print(f"Connected to MongoDB: {MONGODB_DB}")
 
 
@@ -63,7 +73,66 @@ MOOD_CATEGORIES = {
 }
 
 
-# ─── CRUD Operations ─────────────────────────────────────────
+# ─── USER Operations ─────────────────────────────────────────
+async def create_user(username: str, email: str, password_hash: str, display_name: str = ""):
+    """Create a new user. Returns the user dict or raises on duplicate."""
+    now = datetime.utcnow()
+    user = {
+        "username": username.lower().strip(),
+        "email": email.lower().strip(),
+        "password_hash": password_hash,
+        "display_name": display_name or username,
+        "bio": "",
+        "avatar_url": "",
+        "created_at": now,
+        "updated_at": now,
+    }
+    result = await db.users.insert_one(user)
+    user["_id"] = str(result.inserted_id)
+    return user
+
+
+async def get_user_by_email(email: str):
+    """Find a user by email. Returns dict or None."""
+    user = await db.users.find_one({"email": email.lower().strip()})
+    if user:
+        user["_id"] = str(user["_id"])
+    return user
+
+
+async def get_user_by_username(username: str):
+    """Find a user by username. Returns dict or None."""
+    user = await db.users.find_one({"username": username.lower().strip()})
+    if user:
+        user["_id"] = str(user["_id"])
+    return user
+
+
+async def get_user_by_id(user_id: str):
+    """Find a user by ObjectId string. Returns dict or None."""
+    try:
+        user = await db.users.find_one({"_id": ObjectId(user_id)})
+        if user:
+            user["_id"] = str(user["_id"])
+        return user
+    except Exception:
+        return None
+
+
+async def update_user_profile(user_id: str, updates: dict):
+    """Update user profile fields. Returns updated user."""
+    allowed_fields = {"display_name", "bio", "avatar_url", "email"}
+    safe_updates = {k: v for k, v in updates.items() if k in allowed_fields}
+    safe_updates["updated_at"] = datetime.utcnow()
+
+    await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": safe_updates}
+    )
+    return await get_user_by_id(user_id)
+
+
+# ─── MOOD CRUD Operations ────────────────────────────────────
 async def add_mood_entry(
     user_id: str,
     mood: str,
@@ -105,11 +174,11 @@ async def add_mood_entry(
     return entry
 
 
-async def get_recent_moods(user_id: str, limit: int = 50):
+async def get_recent_moods(user_id: str, limit: int = 50, skip: int = 0):
     cursor = db.moods.find(
         {"user_id": user_id},
         {"_id": 0}
-    ).sort("created_at", -1).limit(limit)
+    ).sort("created_at", -1).skip(skip).limit(limit)
     return await cursor.to_list(length=limit)
 
 
@@ -127,6 +196,17 @@ async def get_mood_count(user_id: str) -> int:
 
 async def delete_all_moods(user_id: str):
     result = await db.moods.delete_many({"user_id": user_id})
+    return result.deleted_count
+
+
+async def delete_mood_entry(user_id: str, entry_date: str, entry_time: str, mood: str):
+    """Delete a specific mood entry by date, time, and mood."""
+    result = await db.moods.delete_one({
+        "user_id": user_id,
+        "date": entry_date,
+        "time": entry_time,
+        "mood": mood.lower(),
+    })
     return result.deleted_count
 
 

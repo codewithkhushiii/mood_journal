@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vibely — Mood Dashboard</title>
+<meta name="description" content="Track your vibes, analyze emotional patterns, and chat with an AI mood companion. Vibely is your personal mood journal.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -43,19 +44,22 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   border-radius:0 32px 32px 0;
   padding:26px 20px;display:flex;flex-direction:column;gap:26px;
   position:sticky;top:0;height:100vh;
+  transition:transform .3s ease;
+  z-index:50;
 }
 .brand{display:flex;align-items:center;gap:10px;padding:0 6px;}
 .brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,var(--coral),var(--coral-deep));
   display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:var(--shadow-sm);}
 .brand-name{font-family:'Baloo 2';font-weight:800;font-size:20px;color:var(--ink);}
 
-.user-chip{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:18px;padding:10px 12px;box-shadow:var(--shadow-sm);}
+.user-chip{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:18px;padding:10px 12px;box-shadow:var(--shadow-sm);cursor:pointer;transition:.2s;}
+.user-chip:hover{transform:translateY(-1px);}
 .avatar-wrap{position:relative;width:46px;height:46px;flex-shrink:0;}
 .avatar{width:46px;height:46px;border-radius:50%;background:var(--peach);border:2px dashed var(--coral-deep);
-  display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;cursor:pointer;color:var(--coral-deep);}
-.avatar img{width:100%;height:100%;object-fit:cover;}
+  display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;color:var(--coral-deep);}
+.avatar img{width:100%;height:100%;object-fit:cover;border:none;}
 .user-chip .hello{font-size:12px;color:var(--ink-soft);font-weight:700;}
-.user-chip .uname{font-family:'Baloo 2';font-weight:700;font-size:15px;}
+.user-chip .uname{font-family:'Baloo 2';font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
 
 nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:14px;color:var(--ink-soft);font-weight:700;font-size:14.5px;transition:.18s;}
@@ -70,6 +74,15 @@ nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 .streak-card p{margin:0 0 12px;font-size:12px;opacity:.9;line-height:1.4;}
 .streak-btn{background:#fff;color:var(--coral-deep);font-weight:800;font-size:12.5px;padding:9px 0;width:100%;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.12);}
 
+.logout-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;color:var(--ink-soft);font-weight:700;font-size:14px;transition:.18s;width:100%;}
+.logout-btn:hover{background:rgba(255,255,255,.55);color:#D35050;}
+.logout-btn svg{width:18px;height:18px;}
+
+/* Mobile hamburger */
+.hamburger{display:none;position:fixed;top:16px;left:16px;z-index:60;width:44px;height:44px;border-radius:14px;background:var(--paper);box-shadow:var(--shadow-sm);align-items:center;justify-content:center;cursor:pointer;border:none;}
+.hamburger svg{width:22px;height:22px;color:var(--ink);}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:40;}
+
 /* ── MAIN ──────────────────────────────── */
 .main{flex:1;padding:26px 34px 50px;max-width:1180px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:16px;}
@@ -79,36 +92,14 @@ nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 .top-actions{display:flex;align-items:center;gap:12px;}
 .icon-btn{width:42px;height:42px;border-radius:14px;background:var(--paper);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;position:relative;color:var(--ink-soft);cursor:pointer;}
 .icon-btn .badge{position:absolute;top:-4px;right:-4px;background:var(--coral-deep);color:#fff;font-size:10px;font-weight:800;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
-.notification-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 12px;
-  background: var(--paper);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow);
-  width: 250px;
-  z-index: 10;
-  text-align: left;
-  overflow: hidden;
+.notification-dropdown{
+  position:absolute;top:100%;right:0;margin-top:12px;background:var(--paper);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow);width:250px;z-index:10;
+  text-align:left;overflow:hidden;
 }
-.notif-header {
-  padding: 12px 16px;
-  font-family: 'Baloo 2';
-  font-size: 15px;
-  font-weight: 800;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
-}
-.notif-item {
-  padding: 12px 16px;
-  font-size: 13px;
-  color: var(--ink-soft);
-  border-bottom: 1px solid var(--line);
-}
-.notif-item:last-child {
-  border-bottom: none;
-}
+.notif-header{padding:12px 16px;font-family:'Baloo 2';font-size:15px;font-weight:800;border-bottom:1px solid var(--line);color:var(--ink);}
+.notif-item{padding:12px 16px;font-size:13px;color:var(--ink-soft);border-bottom:1px solid var(--line);}
+.notif-item:last-child{border-bottom:none;}
 
 /* Hero */
 .hero{position:relative;background:linear-gradient(120deg,var(--peach) 0%, #FCEEE4 55%, var(--yellow) 130%);
@@ -145,7 +136,7 @@ nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 /* Two-column charts row */
 .row2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:20px;}
 .card{background:var(--paper);border-radius:var(--radius-md);padding:20px 22px;box-shadow:var(--shadow-sm);}
-.card-head{display:flex;align-items:center;justify-content:between;justify-content:space-between;margin-bottom:16px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .card-head h3{margin:0;font-size:16.5px;}
 .pill-select{font-size:12px;font-weight:700;background:var(--cream);color:var(--ink-soft);padding:6px 12px;border-radius:10px;}
 
@@ -156,7 +147,7 @@ nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 
 .donut-wrap{display:flex;align-items:center;gap:18px;}
 .donut{width:120px;height:120px;border-radius:50%;flex-shrink:0;
-  background:conic-gradient(var(--coral-deep) 0% 45%, var(--blue-deep) 45% 70%, var(--yellow-deep) 70% 85%, var(--green-deep) 85% 95%, #D9CFC0 95% 100%);
+  background:conic-gradient(#D9CFC0 0% 100%);
   position:relative;}
 .donut::after{content:"";position:absolute;inset:20px;background:var(--paper);border-radius:50%;}
 .legend{display:flex;flex-direction:column;gap:9px;font-size:13px;font-weight:700;}
@@ -171,18 +162,18 @@ nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 .list-row:last-child{border-bottom:none;}
 .thumb{width:44px;height:44px;border-radius:12px;background:var(--peach);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
 .list-info{flex:1;min-width:0;}
-.list-title{font-weight:800;font-size:14px;}
-.list-sub{font-size:12px;color:var(--ink-soft);}
+.list-title{font-weight:800;font-size:14px;text-transform:capitalize;}
+.list-sub{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .play-btn{width:32px;height:32px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--coral-deep);flex-shrink:0;}
-.see-all{font-size:12px;font-weight:800;color:var(--coral-deep);}
+.see-all{font-size:12px;font-weight:800;color:var(--coral-deep);cursor:pointer;}
+.see-all:hover{text-decoration:underline;}
 
 .mix-card{position:relative;border-radius:var(--radius-md);overflow:hidden;min-height:210px;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;color:#fff;box-shadow:var(--shadow-sm);}
-.mix-bg{position:absolute;inset:0;background:linear-gradient(160deg,var(--green-deep),var(--blue-deep));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-weight:700;font-size:12.5px;text-align:center;border:2px dashed rgba(255,255,255,.5);cursor:pointer;overflow:hidden;}
+.mix-bg{position:absolute;inset:0;background:linear-gradient(160deg,var(--green-deep),var(--blue-deep));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-weight:700;font-size:12.5px;text-align:center;overflow:hidden;}
 .mix-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:none;}
 .mix-overlay{position:relative;z-index:2;background:linear-gradient(0deg, rgba(0,0,0,.45), transparent 70%);margin:-18px;padding:18px;padding-top:60px;}
 .mix-overlay h4{margin:0 0 2px;font-family:'Baloo 2';font-size:17px;}
 .mix-overlay p{margin:0;font-size:12.5px;opacity:.9;}
-.mix-play{position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:#fff;color:var(--green-deep);display:flex;align-items:center;justify-content:center;z-index:3;}
 
 /* Bottom CTA banner */
 .banner{margin-top:20px;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:20px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;color:#2f3f34;box-shadow:var(--shadow-sm);}
@@ -200,49 +191,140 @@ nav.nav-list{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 .mood-opt.picked{border-color:var(--coral-deep);background:var(--peach);}
 .slider-row{margin-top:24px;}
 .slider-row input{width:100%;accent-color:var(--coral-deep);}
-textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var(--line);padding:14px;font-family:inherit;resize:vertical;min-height:90px;}
-.save-btn{margin-top:18px;background:var(--coral-deep);color:#fff;font-weight:800;padding:13px 26px;border-radius:14px;}
+textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var(--line);padding:14px;font-family:inherit;resize:vertical;min-height:90px;outline:none;}
+textarea.note:focus{border-color:var(--coral-deep);}
+.save-btn{margin-top:18px;background:var(--coral-deep);color:#fff;font-weight:800;padding:13px 26px;border-radius:14px;transition:.2s;}
+.save-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(234,138,102,.4);}
+.save-btn:disabled{opacity:.5;transform:none;cursor:not-allowed;}
 
+/* Activity chips */
+.activity-section{margin-top:20px;}
+.activity-section h4{font-size:14px;margin:0 0 10px;font-family:'Baloo 2';}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:8px 14px;border-radius:20px;font-size:12.5px;font-weight:700;background:var(--cream);border:2px solid transparent;transition:.15s;cursor:pointer;}
+.chip:hover{transform:translateY(-1px);}
+.chip.on{border-color:var(--coral-deep);background:var(--peach);color:var(--coral-deep);}
+
+/* Chat */
 .chat-shell{display:flex;flex-direction:column;height:70vh;}
 .chat-log{flex:1;overflow-y:auto;padding:6px 4px;display:flex;flex-direction:column;gap:14px;}
 .msg{display:flex;gap:10px;max-width:75%;}
 .msg.bot{align-self:flex-start;}
 .msg.user{align-self:flex-end;flex-direction:row-reverse;}
 .msg .av{width:32px;height:32px;border-radius:50%;background:var(--peach);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.msg .bubble{background:var(--cream);padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;}
+.msg .bubble{background:var(--cream);padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-wrap:break-word;}
 .msg.user .bubble{background:var(--coral-deep);color:#fff;}
 .chat-input-row{display:flex;gap:10px;margin-top:14px;}
-.chat-input-row input{flex:1;border-radius:14px;border:1px solid var(--line);padding:12px 16px;font-family:inherit;}
+.chat-input-row input{flex:1;border-radius:14px;border:1px solid var(--line);padding:12px 16px;font-family:inherit;outline:none;}
+.chat-input-row input:focus{border-color:var(--coral-deep);}
 .chat-input-row button{background:var(--coral-deep);color:#fff;width:46px;border-radius:14px;font-weight:800;}
 
+/* Profile section */
+.profile-grid{display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:start;}
+.profile-avatar-area{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.profile-avatar{width:120px;height:120px;border-radius:50%;background:var(--peach);border:3px dashed var(--coral-deep);display:flex;align-items:center;justify-content:center;font-size:42px;overflow:hidden;cursor:pointer;transition:.2s;color:var(--coral-deep);}
+.profile-avatar:hover{transform:scale(1.03);box-shadow:var(--shadow);}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;border:none;}
+.profile-upload-btn{font-size:12px;font-weight:800;color:var(--coral-deep);cursor:pointer;}
+.profile-fields{display:flex;flex-direction:column;gap:16px;}
+.profile-field label{display:block;font-weight:700;font-size:13px;margin-bottom:6px;color:var(--ink-soft);}
+.profile-field input,.profile-field textarea{
+  width:100%;padding:12px 16px;border-radius:14px;border:2px solid var(--line);
+  font-family:inherit;font-size:14px;color:var(--ink);background:var(--cream);outline:none;transition:.2s;
+}
+.profile-field input:focus,.profile-field textarea:focus{border-color:var(--coral-deep);background:var(--paper);}
+.profile-field textarea{resize:vertical;min-height:80px;}
+.profile-info{margin-top:10px;font-size:12.5px;color:var(--ink-soft);font-weight:600;}
+
+/* All Entries section */
+.entries-controls{display:flex;gap:12px;margin-bottom:16px;align-items:center;}
+.entries-search{flex:1;display:flex;align-items:center;gap:8px;background:var(--cream);border-radius:14px;padding:10px 16px;border:2px solid transparent;transition:.2s;}
+.entries-search:focus-within{border-color:var(--coral-deep);background:var(--paper);}
+.entries-search input{border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;width:100%;color:var(--ink);}
+.entries-search svg{flex-shrink:0;color:var(--ink-soft);}
+.entries-count{font-size:13px;font-weight:700;color:var(--ink-soft);}
+.entries-list{display:flex;flex-direction:column;gap:2px;}
+.entry-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;transition:.15s;border-bottom:1px solid var(--line);}
+.entry-card:hover{background:var(--cream);}
+.entry-emoji{width:48px;height:48px;border-radius:14px;background:var(--peach);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.entry-details{flex:1;min-width:0;}
+.entry-mood{font-weight:800;font-size:15px;text-transform:capitalize;}
+.entry-note{font-size:13px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.entry-meta{font-size:12px;color:var(--ink-soft);display:flex;gap:12px;margin-top:2px;}
+.entry-intensity{font-size:12px;font-weight:800;color:var(--coral-deep);background:var(--peach);padding:4px 10px;border-radius:8px;white-space:nowrap;}
+.entry-delete{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);cursor:pointer;transition:.15s;flex-shrink:0;opacity:0;}
+.entry-card:hover .entry-delete{opacity:1;}
+.entry-delete:hover{background:#FEF0F0;color:#D35050;}
+.load-more-btn{margin:16px auto;display:block;padding:12px 30px;border-radius:14px;background:var(--cream);font-weight:800;font-size:13px;color:var(--ink-soft);border:2px solid var(--line);transition:.15s;}
+.load-more-btn:hover{border-color:var(--coral-deep);color:var(--coral-deep);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--ink-soft);}
+.empty-state .empty-emoji{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;font-weight:600;}
+
+/* ── Responsive ── */
 @media(max-width:1000px){
   .bento{grid-template-columns:repeat(2,1fr);}
   .row2,.row3{grid-template-columns:1fr;}
-  .sidebar{display:none;}
-  .main{padding:20px;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);border-radius:0 24px 24px 0;}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay.show{display:block;}
+  .hamburger{display:flex;}
+  .main{padding:20px;padding-top:60px;}
+  .mood-grid{grid-template-columns:repeat(3,1fr);}
+  .profile-grid{grid-template-columns:1fr;text-align:center;}
 }
+@media(max-width:600px){
+  .mood-grid{grid-template-columns:repeat(2,1fr);}
+  .hero{flex-direction:column;text-align:center;}
+  .hero-illustration{width:140px;height:140px;}
+  .topbar{flex-wrap:wrap;}
+  .searchbar{max-width:100%;order:3;flex-basis:100%;}
+}
+
+/* ── Toast Notifications ── */
+.toast-container{position:fixed;bottom:30px;right:30px;display:flex;flex-direction:column;gap:12px;z-index:9999;}
+.toast{
+  background:var(--paper);color:var(--ink);padding:16px 20px;border-radius:16px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.15);display:flex;align-items:center;gap:12px;
+  font-weight:700;font-size:14.5px;animation:slideIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+  transform:translateX(120%);
+}
+.toast.success{border-left:5px solid var(--green-deep);}
+.toast.error{border-left:5px solid var(--coral-deep);}
+.toast.hide{animation:slideOut 0.3s ease-in forwards;}
+@keyframes slideIn{to{transform:translateX(0);}}
+@keyframes slideOut{to{transform:translateX(120%);opacity:0;}}
+
+/* Loading shimmer */
+.shimmer{background:linear-gradient(90deg,var(--cream) 25%,#f5ead5 50%,var(--cream) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 </style>
 </head>
 <body>
 
 <div class="app">
+  <!-- Mobile hamburger -->
+  <button class="hamburger" onclick="toggleSidebar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
   <!-- ═══════════ SIDEBAR ═══════════ -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark">🌤️</div>
       <span class="brand-name">Vibely</span>
     </div>
 
-    <div class="user-chip">
+    <div class="user-chip" onclick="go('profile', document.querySelector('[data-section=profile]'))">
       <div class="avatar-wrap">
-        <label class="avatar" id="avatarLabel">
-          <span id="avatarPlaceholder">＋</span>
-          <input type="file" accept="image/*" id="avatarInput" style="display:none">
-        </label>
+        <div class="avatar" id="sidebarAvatar">
+          <span id="avatarPlaceholder">{{ user.display_name[0] | upper if user.display_name else '?' }}</span>
+        </div>
       </div>
       <div>
         <div class="hello">Hi there 👋</div>
-        <div class="uname">Your Name</div>
+        <div class="uname" id="sidebarDisplayName">{{ user.display_name or user.username }}</div>
       </div>
     </div>
 
@@ -255,6 +337,10 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
         Log Mood
       </button>
+      <button class="nav-item" data-section="entries" onclick="go('entries',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        All Entries
+      </button>
       <button class="nav-item" data-section="insights" onclick="go('insights',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Insights
@@ -263,9 +349,9 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         AI Chat
       </button>
-      <button class="nav-item" data-section="settings" onclick="go('settings',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
-        Settings
+      <button class="nav-item" data-section="profile" onclick="go('profile',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
       </button>
     </nav>
 
@@ -273,10 +359,15 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
 
     <div class="streak-card">
       <div class="icon">🔥</div>
-      <h4 id="sideStreakNum">7 day streak</h4>
+      <h4 id="sideStreakNum">— day streak</h4>
       <p>Keep the streak alive — log today's vibe.</p>
       <button class="streak-btn" onclick="go('log', document.querySelector('[data-section=log]'))">Log Now</button>
     </div>
+
+    <button class="logout-btn" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
   </aside>
 
   <!-- ═══════════ MAIN ═══════════ -->
@@ -291,17 +382,16 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
           <input type="text" id="searchInput" placeholder="Search your entries..." oninput="handleSearch(this.value)">
         </div>
         <div class="top-actions">
-          <div class="icon-btn" onclick="toggleNotifications()">
+          <div class="icon-btn" id="notifBtn" onclick="toggleNotifications()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-            <span class="badge" id="notificationBadge">3</span>
+            <span class="badge" id="notificationBadge" style="display:none;">0</span>
             <div class="notification-dropdown" id="notificationDropdown" style="display:none;">
               <div class="notif-header">Notifications</div>
-              <div class="notif-item">🔥 You're on a 7 day streak!</div>
-              <div class="notif-item">🌟 Your vibe is improving this week.</div>
-              <div class="notif-item">💡 Try a short walk today.</div>
+              <div id="notifList">
+                <div class="notif-item" style="color:var(--ink-soft);">No notifications yet</div>
+              </div>
             </div>
           </div>
-          <div class="icon-btn" style="background:var(--peach);color:var(--coral-deep);">🙂</div>
         </div>
       </div>
 
@@ -309,8 +399,8 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
       <div class="hero">
         <div class="hero-text">
           <p class="hero-eyebrow">Emotional check-in</p>
-          <h2>Good Morning! 🌞</h2>
-          <p>You're on a 7 day streak. Take a moment to log how you're really feeling today.</p>
+          <h2 id="heroGreeting">Loading...</h2>
+          <p id="heroSubtext">Take a moment to log how you're really feeling today.</p>
           <button class="hero-cta" onclick="go('log', document.querySelector('[data-section=log]'))">▶ Log Today's Mood</button>
         </div>
         <label class="hero-illustration" id="heroIllustration">
@@ -323,19 +413,19 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
       <div class="bento">
         <div class="stat-card">
           <div class="stat-icon ic-green">📊</div>
-          <div class="stat-value" id="statTotal">248</div>
+          <div class="stat-value" id="statTotal">—</div>
           <div class="stat-label">Vibes Logged</div>
-          <div class="stat-delta">+18% this week</div>
+          <div class="stat-delta" id="statTotalDelta"></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon ic-pink">🔥</div>
-          <div class="stat-value" id="statStreak">7</div>
+          <div class="stat-value" id="statStreak">—</div>
           <div class="stat-label">Day Streak</div>
-          <div class="stat-delta">personal best</div>
+          <div class="stat-delta" id="statStreakDelta"></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon ic-yellow">💚</div>
-          <div class="stat-value" id="statPositive">72%</div>
+          <div class="stat-value" id="statPositive">—</div>
           <div class="stat-label">Positive Ratio</div>
           <div class="ring">
             <svg width="44" height="44" viewBox="0 0 44 44">
@@ -346,7 +436,7 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
         </div>
         <div class="stat-card">
           <div class="stat-icon ic-blue">⚡</div>
-          <div class="stat-value" id="statIntensity">6.4</div>
+          <div class="stat-value" id="statIntensity">—</div>
           <div class="stat-label">Avg Intensity</div>
           <div class="stat-delta" style="color:var(--blue-deep);">out of 10</div>
         </div>
@@ -364,13 +454,9 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
         <div class="card">
           <div class="card-head"><h3>Top Moods</h3></div>
           <div class="donut-wrap">
-            <div class="donut"></div>
-            <div class="legend">
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--coral-deep)"></span>Happy</span><span class="pct">45%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--blue-deep)"></span>Calm</span><span class="pct">25%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--yellow-deep)"></span>Anxious</span><span class="pct">15%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--green-deep)"></span>Tired</span><span class="pct">10%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:#D9CFC0"></span>Other</span><span class="pct">5%</span></div>
+            <div class="donut" id="dashDonut"></div>
+            <div class="legend" id="dashLegend">
+              <div style="color:var(--ink-soft);font-size:13px;">Log moods to see distribution</div>
             </div>
           </div>
         </div>
@@ -379,28 +465,14 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
       <!-- Recent + suggestion -->
       <div class="row3">
         <div class="card">
-          <div class="card-head"><h3>Recent Entries</h3><span class="see-all">See All</span></div>
+          <div class="card-head"><h3>Recent Entries</h3><span class="see-all" onclick="go('entries', document.querySelector('[data-section=entries]'))">See All →</span></div>
           <div id="recentEntriesList">
-            <div class="list-row">
-              <div class="thumb">😊</div>
-              <div class="list-info"><div class="list-title">Happy</div><div class="list-sub">Working · this morning</div></div>
-              <div class="play-btn">▸</div>
-            </div>
-            <div class="list-row">
-              <div class="thumb">😌</div>
-              <div class="list-info"><div class="list-title">Calm</div><div class="list-sub">Meditation · yesterday</div></div>
-              <div class="play-btn">▸</div>
-            </div>
-            <div class="list-row">
-              <div class="thumb">😴</div>
-              <div class="list-info"><div class="list-title">Tired</div><div class="list-sub">Studying · yesterday</div></div>
-              <div class="play-btn">▸</div>
-            </div>
+            <div class="empty-state"><div class="empty-emoji">📝</div><p>No entries yet. Log your first mood!</p></div>
           </div>
         </div>
 
         <div class="mix-card">
-          <div class="mix-bg" id="mixIllustration" style="cursor:default; border:none;"></div>
+          <div class="mix-bg" id="mixIllustration"></div>
           <div class="mix-overlay">
             <h4 id="mixTitle">Today's Suggestion</h4>
             <p id="mixReason">Loading personalized recommendation...</p>
@@ -433,13 +505,56 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
           <button class="mood-opt" data-mood="Stressed" onclick="pickMood(this)"><span class="em">😫</span>Stressed</button>
           <button class="mood-opt" data-mood="Loved" onclick="pickMood(this)"><span class="em">🥰</span>Loved</button>
           <button class="mood-opt" data-mood="Motivated" onclick="pickMood(this)"><span class="em">🚀</span>Motivated</button>
+          <button class="mood-opt" data-mood="Productive" onclick="pickMood(this)"><span class="em">💪</span>Productive</button>
+          <button class="mood-opt" data-mood="Creative" onclick="pickMood(this)"><span class="em">🎨</span>Creative</button>
+          <button class="mood-opt" data-mood="Hopeful" onclick="pickMood(this)"><span class="em">🌟</span>Hopeful</button>
+          <button class="mood-opt" data-mood="Peaceful" onclick="pickMood(this)"><span class="em">🕊️</span>Peaceful</button>
+          <button class="mood-opt" data-mood="Overwhelmed" onclick="pickMood(this)"><span class="em">🌊</span>Overwhelmed</button>
         </div>
         <div class="slider-row">
           <label style="font-weight:800;font-size:13.5px;">Intensity: <span id="intVal">5</span>/10</label>
           <input type="range" min="1" max="10" value="5" id="intSlider" oninput="document.getElementById('intVal').textContent=this.value">
         </div>
-        <textarea class="note" placeholder="What's on your mind? (optional)"></textarea>
-        <button class="save-btn" onclick="alert('Wire this button up to your /api/mood endpoint 🙂')">Save Entry</button>
+
+        <!-- Activity tags -->
+        <div class="activity-section">
+          <h4>Activities (optional)</h4>
+          <div class="chip-grid" id="actGroup">
+            <button class="chip" data-val="Working" onclick="toggleChip(this)">💼 Working</button>
+            <button class="chip" data-val="Studying" onclick="toggleChip(this)">📚 Studying</button>
+            <button class="chip" data-val="Exercise" onclick="toggleChip(this)">🏃 Exercise</button>
+            <button class="chip" data-val="Meditation" onclick="toggleChip(this)">🧘 Meditation</button>
+            <button class="chip" data-val="Socializing" onclick="toggleChip(this)">👥 Socializing</button>
+            <button class="chip" data-val="Gaming" onclick="toggleChip(this)">🎮 Gaming</button>
+            <button class="chip" data-val="Reading" onclick="toggleChip(this)">📖 Reading</button>
+            <button class="chip" data-val="Music" onclick="toggleChip(this)">🎵 Music</button>
+            <button class="chip" data-val="Cooking" onclick="toggleChip(this)">🍳 Cooking</button>
+            <button class="chip" data-val="Walking" onclick="toggleChip(this)">🚶 Walking</button>
+            <button class="chip" data-val="Sleeping" onclick="toggleChip(this)">😴 Sleeping</button>
+            <button class="chip" data-val="Creating" onclick="toggleChip(this)">🎨 Creating</button>
+          </div>
+        </div>
+
+        <textarea class="note" id="noteInput" placeholder="What's on your mind? (optional)"></textarea>
+        <button class="save-btn" id="saveMoodBtn" onclick="submitMood()">Save Entry</button>
+      </div>
+    </section>
+
+    <!-- ALL ENTRIES -->
+    <section class="section" id="section-entries">
+      <div class="topbar"><h1>All Entries</h1></div>
+      <div class="simple-card">
+        <div class="entries-controls">
+          <div class="entries-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="entriesSearchInput" placeholder="Search entries..." oninput="handleEntriesSearch(this.value)">
+          </div>
+          <span class="entries-count" id="entriesCount"></span>
+        </div>
+        <div class="entries-list" id="entriesList">
+          <div class="empty-state"><div class="empty-emoji">📝</div><p>No entries yet</p></div>
+        </div>
+        <button class="load-more-btn" id="loadMoreBtn" style="display:none;" onclick="loadMoreEntries()">Load More</button>
       </div>
     </section>
 
@@ -454,19 +569,18 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
         <div class="card">
           <div class="card-head"><h3>Mood Distribution</h3></div>
           <div class="donut-wrap">
-            <div class="donut"></div>
-            <div class="legend">
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--coral-deep)"></span>Happy</span><span class="pct">45%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--blue-deep)"></span>Calm</span><span class="pct">25%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--yellow-deep)"></span>Anxious</span><span class="pct">15%</span></div>
-              <div class="legend-row"><span class="label"><span class="dot" style="background:var(--green-deep)"></span>Tired</span><span class="pct">10%</span></div>
+            <div class="donut" id="insightsDonut"></div>
+            <div class="legend" id="insightsLegend">
+              <div style="color:var(--ink-soft);font-size:13px;">Log moods to see distribution</div>
             </div>
           </div>
         </div>
       </div>
       <div class="simple-card" style="margin-top:16px;">
         <h3 style="margin-top:0;">Activity Correlations</h3>
-        <p style="color:var(--ink-soft);">Log moods with activities to unlock correlations here — wire this section up to <code>/api/analytics/activities</code>.</p>
+        <div id="activityCorrelations">
+          <p style="color:var(--ink-soft);">Log moods with activities to unlock correlations here.</p>
+        </div>
       </div>
     </section>
 
@@ -478,17 +592,43 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
           <div class="msg bot"><div class="av">🧠</div><div class="bubble">Hey! I can look at your mood history and help spot patterns. What do you want to know?</div></div>
         </div>
         <div class="chat-input-row">
-          <input type="text" id="chatInput" placeholder="Ask about your mood patterns..." onkeydown="if(event.key==='Enter')sendDemoChat()">
-          <button onclick="sendDemoChat()">➤</button>
+          <input type="text" id="chatInput" placeholder="Ask about your mood patterns..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button onclick="sendChat()">➤</button>
         </div>
       </div>
     </section>
 
-    <!-- SETTINGS -->
-    <section class="section" id="section-settings">
-      <div class="topbar"><h1>Settings</h1></div>
+    <!-- PROFILE -->
+    <section class="section" id="section-profile">
+      <div class="topbar"><h1>Profile</h1></div>
       <div class="simple-card">
-        <p style="color:var(--ink-soft);margin-top:0;">Account, notification, and data preferences go here.</p>
+        <div class="profile-grid">
+          <div class="profile-avatar-area">
+            <label class="profile-avatar" id="profileAvatarLabel">
+              <span id="profileAvatarPlaceholder">{{ user.display_name[0] | upper if user.display_name else '?' }}</span>
+              <input type="file" accept="image/*" id="profileAvatarInput" style="display:none" onchange="uploadAvatar(this)">
+            </label>
+            <span class="profile-upload-btn" onclick="document.getElementById('profileAvatarInput').click()">Change Photo</span>
+          </div>
+          <div class="profile-fields">
+            <div class="profile-field">
+              <label>Display Name</label>
+              <input type="text" id="profileName" value="{{ user.display_name or '' }}" placeholder="Your display name">
+            </div>
+            <div class="profile-field">
+              <label>Email</label>
+              <input type="email" id="profileEmail" value="{{ user.email or '' }}" placeholder="your@email.com">
+            </div>
+            <div class="profile-field">
+              <label>Bio</label>
+              <textarea id="profileBio" placeholder="Tell us about yourself...">{{ user.bio or '' }}</textarea>
+            </div>
+            <button class="save-btn" onclick="saveProfile()">Save Changes</button>
+            <div class="profile-info">
+              Member since {{ user.created_at.strftime('%B %Y') if user.created_at else 'recently' }} · @{{ user.username }}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -496,181 +636,697 @@ textarea.note{width:100%;margin-top:16px;border-radius:14px;border:1px solid var
 </div>
 
 <script>
-/* ── Nav switching ── */
-function go(id, btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('section-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+/* ── State ── */
+let entriesPage = 0;
+const ENTRIES_PER_PAGE = 20;
+let allLoadedEntries = [];
+let entriesSearchQuery = '';
+
+/* ── Dynamic Greeting ── */
+function setGreeting() {
+  const h = new Date().getHours();
+  const el = document.getElementById('heroGreeting');
+  const sub = document.getElementById('heroSubtext');
+  let greeting, emoji;
+  if (h < 12) { greeting = 'Good Morning'; emoji = '🌞'; }
+  else if (h < 17) { greeting = 'Good Afternoon'; emoji = '☀️'; }
+  else if (h < 21) { greeting = 'Good Evening'; emoji = '🌅'; }
+  else { greeting = 'Good Night'; emoji = '🌙'; }
+  if (el) el.textContent = `${greeting}! ${emoji}`;
 }
 
-/* ── Realtime Search ── */
+/* ── Nav switching ── */
+function go(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (id === 'dashboard') loadDashboardStats();
+  if (id === 'insights') loadInsightsData();
+  if (id === 'entries') loadAllEntries();
+  if (id === 'profile') loadProfile();
+
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+/* ── Realtime Search (dashboard) ── */
 let searchTimeout;
 async function handleSearch(query) {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(async () => {
-        try {
-            let url = `/api/moods`;
-            if (query.trim()) {
-                url = `/api/search?q=${encodeURIComponent(query)}`;
-            }
-            const res = await fetch(url);
-            const data = await res.json();
-            const list = document.getElementById('recentEntriesList');
-            if (!list) return;
-            
-            if (data.entries.length === 0) {
-                list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink-soft);font-size:13px;">No entries found.</div>';
-                return;
-            }
-            
-            list.innerHTML = data.entries.map(e => `
-                <div class="list-row">
-                  <div class="thumb">${e.emoji || '🫠'}</div>
-                  <div class="list-info">
-                    <div class="list-title">${e.mood}</div>
-                    <div class="list-sub">${e.note || (e.activities||[]).join(', ') || 'No note'} · ${e.date}</div>
-                  </div>
-                  <div class="play-btn">▸</div>
-                </div>
-            `).join('');
-        } catch (err) {
-            console.error('Search failed', err);
-        }
-    }, 300);
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async () => {
+    try {
+      let url = '/api/moods?limit=5';
+      if (query.trim()) {
+        url = `/api/search?q=${encodeURIComponent(query)}&limit=10`;
+      }
+      const res = await fetch(url);
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const data = await res.json();
+      const list = document.getElementById('recentEntriesList');
+      if (!list) return;
+
+      if (!data.entries || data.entries.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-emoji">🔍</div><p>No entries found.</p></div>';
+        return;
+      }
+
+      list.innerHTML = data.entries.map(e => `
+        <div class="list-row">
+          <div class="thumb">${e.emoji || '🫠'}</div>
+          <div class="list-info">
+            <div class="list-title">${e.mood}</div>
+            <div class="list-sub">${e.note || (e.activities||[]).join(', ') || 'No note'} · ${e.date}</div>
+          </div>
+          <div class="play-btn">▸</div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('Search failed', err);
+    }
+  }, 300);
+}
+
+/* ── All Entries section ── */
+async function loadAllEntries(reset = true) {
+  if (reset) {
+    entriesPage = 0;
+    allLoadedEntries = [];
+  }
+
+  try {
+    let url;
+    if (entriesSearchQuery.trim()) {
+      url = `/api/search?q=${encodeURIComponent(entriesSearchQuery)}&limit=200`;
+    } else {
+      url = `/api/moods?limit=${ENTRIES_PER_PAGE}&skip=${entriesPage * ENTRIES_PER_PAGE}`;
+    }
+
+    const res = await fetch(url);
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const data = await res.json();
+
+    const entries = data.entries || [];
+    const total = data.total || data.count || entries.length;
+
+    if (reset) allLoadedEntries = entries;
+    else allLoadedEntries = [...allLoadedEntries, ...entries];
+
+    renderEntries(allLoadedEntries, total);
+  } catch (err) {
+    console.error('Failed to load entries', err);
+  }
+}
+
+function renderEntries(entries, total) {
+  const list = document.getElementById('entriesList');
+  const countEl = document.getElementById('entriesCount');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+  if (countEl) countEl.textContent = `${total} total entries`;
+
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📝</div><p>No entries found</p></div>';
+    loadMoreBtn.style.display = 'none';
+    return;
+  }
+
+  list.innerHTML = entries.map(e => `
+    <div class="entry-card">
+      <div class="entry-emoji">${e.emoji || '🫠'}</div>
+      <div class="entry-details">
+        <div class="entry-mood">${e.mood}</div>
+        <div class="entry-note">${e.note || (e.activities||[]).join(', ') || '—'}</div>
+        <div class="entry-meta">
+          <span>${e.date}</span>
+          <span>${e.time || ''}</span>
+          ${(e.activities||[]).length ? '<span>' + e.activities.join(', ') + '</span>' : ''}
+        </div>
+      </div>
+      <span class="entry-intensity">${e.intensity || 5}/10</span>
+      <button class="entry-delete" onclick="deleteEntry('${e.date}','${e.time}','${e.mood}')" title="Delete">✕</button>
+    </div>
+  `).join('');
+
+  // Show load more if not searching and more entries exist
+  if (!entriesSearchQuery.trim() && allLoadedEntries.length < total) {
+    loadMoreBtn.style.display = 'block';
+  } else {
+    loadMoreBtn.style.display = 'none';
+  }
+}
+
+function loadMoreEntries() {
+  entriesPage++;
+  loadAllEntries(false);
+}
+
+let entriesSearchTimeout;
+function handleEntriesSearch(query) {
+  clearTimeout(entriesSearchTimeout);
+  entriesSearchQuery = query;
+  entriesSearchTimeout = setTimeout(() => loadAllEntries(true), 300);
+}
+
+async function deleteEntry(date, time, mood) {
+  if (!confirm('Delete this entry?')) return;
+  try {
+    const res = await fetch('/api/mood/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date, time, mood })
+    });
+    if (res.ok) {
+      showToast('Entry deleted', 'success');
+      loadAllEntries(true);
+      loadDashboardStats();
+      handleSearch('');
+    } else {
+      showToast('Failed to delete', 'error');
+    }
+  } catch (err) {
+    showToast('Error deleting entry', 'error');
+  }
 }
 
 /* ── Notifications ── */
 function toggleNotifications() {
-    const dropdown = document.getElementById('notificationDropdown');
-    const badge = document.getElementById('notificationBadge');
-    if (dropdown) {
-        if (dropdown.style.display === 'none') {
-            dropdown.style.display = 'block';
-            if (badge) badge.style.display = 'none';
-        } else {
-            dropdown.style.display = 'none';
-        }
+  const dropdown = document.getElementById('notificationDropdown');
+  const badge = document.getElementById('notificationBadge');
+  if (dropdown) {
+    if (dropdown.style.display === 'none') {
+      dropdown.style.display = 'block';
+      if (badge) badge.style.display = 'none';
+    } else {
+      dropdown.style.display = 'none';
     }
+  }
 }
 
 document.addEventListener('click', (e) => {
-    const btn = document.querySelector('.icon-btn[onclick="toggleNotifications()"]');
-    const dropdown = document.getElementById('notificationDropdown');
-    if (btn && dropdown && !btn.contains(e.target)) {
-        dropdown.style.display = 'none';
-    }
+  const btn = document.getElementById('notifBtn');
+  const dropdown = document.getElementById('notificationDropdown');
+  if (btn && dropdown && !btn.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
 });
+
+function updateNotifications(stats) {
+  const list = document.getElementById('notifList');
+  const badge = document.getElementById('notificationBadge');
+  if (!list || !stats || !stats.has_data) return;
+
+  let notifs = [];
+  if (stats.streak_days > 0) notifs.push(`🔥 You're on a ${stats.streak_days} day streak!`);
+  if (stats.trend_type === 'positive') notifs.push('🌟 Your vibe is improving this week!');
+  if (stats.total_entries > 0 && stats.total_entries % 10 === 0) notifs.push(`🎉 ${stats.total_entries} entries milestone!`);
+  if (notifs.length === 0) notifs.push('💡 Try logging a mood today!');
+
+  list.innerHTML = notifs.map(n => `<div class="notif-item">${n}</div>`).join('');
+  if (badge && notifs.length > 0) {
+    badge.textContent = notifs.length;
+    badge.style.display = 'flex';
+  }
+}
 
 /* ── Music Recommendation ── */
 async function loadMusicRecommendation() {
-    try {
-        const res = await fetch(`/api/music`);
-        const data = await res.json();
-        const titleEl = document.getElementById('mixTitle');
-        const reasonEl = document.getElementById('mixReason');
-        if (titleEl && data.song && data.song.title && data.song.artist) {
-            titleEl.textContent = `${data.song.title} - ${data.song.artist}`;
-        }
-        if (reasonEl && data.message) {
-            reasonEl.textContent = data.message;
-        }
-        
-        if (data.song && data.song.album_art) {
-            const bgEl = document.getElementById('mixIllustration');
-            bgEl.innerHTML = '';
-            
-            let img = document.createElement('img');
-            img.src = data.song.album_art;
-            bgEl.appendChild(img);
-        }
-        
-        if (data.song && data.song.preview_url) {
-            const playerContainer = document.getElementById('audioPlayerContainer');
-            const audioPlayer = document.getElementById('mixAudioPlayer');
-            if (playerContainer && audioPlayer) {
-                audioPlayer.src = data.song.preview_url;
-                playerContainer.style.display = 'block';
-            }
-        }
-    } catch (err) {
-        console.error('Music recommendation failed', err);
-        const reasonEl = document.getElementById('mixReason');
-        if (reasonEl) reasonEl.textContent = "Failed to load recommendation.";
+  try {
+    const res = await fetch('/api/music');
+    if (res.status === 401) return;
+    const data = await res.json();
+    const titleEl = document.getElementById('mixTitle');
+    const reasonEl = document.getElementById('mixReason');
+    if (titleEl && data.song && data.song.title && data.song.artist) {
+      titleEl.textContent = `${data.song.title} - ${data.song.artist}`;
     }
+    if (reasonEl && data.message) {
+      reasonEl.textContent = data.message;
+    }
+
+    if (data.song && data.song.album_art) {
+      const bgEl = document.getElementById('mixIllustration');
+      bgEl.innerHTML = '';
+      let img = document.createElement('img');
+      img.src = data.song.album_art;
+      bgEl.appendChild(img);
+    }
+
+    if (data.song && data.song.preview_url) {
+      const playerContainer = document.getElementById('audioPlayerContainer');
+      const audioPlayer = document.getElementById('mixAudioPlayer');
+      if (playerContainer && audioPlayer) {
+        audioPlayer.src = data.song.preview_url;
+        playerContainer.style.display = 'block';
+      }
+    }
+  } catch (err) {
+    console.error('Music recommendation failed', err);
+    const reasonEl = document.getElementById('mixReason');
+    if (reasonEl) reasonEl.textContent = "Failed to load recommendation.";
+  }
 }
 
-/* ── Placeholder image uploads (client-side preview only) ── */
-function wireImagePlaceholder(labelId, inputId, placeholderTextId){
+/* ── Hero image upload (client-side preview) ── */
+function wireImagePlaceholder(labelId, inputId, placeholderTextId) {
   const label = document.getElementById(labelId);
   const input = document.getElementById(inputId);
-  if(!label || !input) return;
+  if (!label || !input) return;
   input.addEventListener('change', () => {
     const file = input.files[0];
-    if(!file) return;
+    if (!file) return;
     const url = URL.createObjectURL(file);
     const img = document.createElement('img');
     img.src = url;
     const placeholderEl = document.getElementById(placeholderTextId);
-    if(placeholderEl) placeholderEl.remove();
+    if (placeholderEl) placeholderEl.remove();
     label.querySelector('span')?.remove();
     label.prepend(img);
   });
 }
-wireImagePlaceholder('avatarLabel','avatarInput','avatarPlaceholder');
-wireImagePlaceholder('heroIllustration','heroInput','heroPlaceholderText');
+wireImagePlaceholder('heroIllustration', 'heroInput', 'heroPlaceholderText');
 
-/* ── Sentiment ring ── */
-window.addEventListener('DOMContentLoaded', () => {
-  handleSearch(''); // Load initial recent entries
-  loadMusicRecommendation();
+/* ── Load Dashboard Stats ── */
+async function loadDashboardStats() {
+  try {
+    const res = await fetch('/api/stats');
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const d = await res.json();
 
-  const ring = document.getElementById('ringFg');
-  const pct = 72;
-  const circumference = 113;
-  setTimeout(() => {
-    if(ring) ring.style.strokeDashoffset = circumference - (circumference * pct/100);
-  }, 200);
+    if (d.has_data) {
+      document.getElementById('statTotal').textContent = d.total_entries;
+      document.getElementById('statStreak').textContent = d.streak_days;
+      document.getElementById('sideStreakNum').textContent = `${d.streak_days} day streak`;
+      document.getElementById('statPositive').textContent = d.sentiment_ratio + '%';
+      document.getElementById('statIntensity').textContent = d.avg_intensity;
 
-  // Weekly bar charts (sample data — replace with /api/analytics/weekly)
-  const week = [
-    {d:'Mon',v:60,c:'var(--coral-deep)'},{d:'Tue',v:80,c:'var(--yellow-deep)'},
-    {d:'Wed',v:45,c:'var(--green-deep)'},{d:'Thu',v:95,c:'var(--coral-deep)'},
-    {d:'Fri',v:70,c:'var(--blue-deep)'},{d:'Sat',v:55,c:'var(--pink)'},{d:'Sun',v:40,c:'var(--green-deep)'}
-  ];
-  ['weeklyBars','weeklyBars2'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.innerHTML = week.map(b=>`
-      <div class="bar-col">
-        <div class="bar" style="height:0%;background:${b.c};" data-h="${b.v}"></div>
-        <span>${b.d}</span>
-      </div>`).join('');
-    setTimeout(()=> el.querySelectorAll('.bar').forEach((bar,i)=>{
-      setTimeout(()=> bar.style.height = bar.dataset.h+'%', i*70);
-    }), 150);
-  });
-});
+      // Update hero subtext
+      const sub = document.getElementById('heroSubtext');
+      if (sub && d.streak_days > 0) {
+        sub.textContent = `You're on a ${d.streak_days} day streak. Take a moment to log how you're really feeling today.`;
+      }
 
-/* ── Log mood ── */
-function pickMood(btn){
-  document.querySelectorAll('.mood-opt').forEach(b=>b.classList.remove('picked'));
-  btn.classList.add('picked');
+      // Ring
+      const ring = document.getElementById('ringFg');
+      const pct = d.sentiment_ratio;
+      const circumference = 113;
+      if (ring) ring.style.strokeDashoffset = circumference - (circumference * pct / 100);
+
+      // Top Moods Donut & Legend
+      updateDonutChart('dashDonut', 'dashLegend', d.distribution, d.total_entries);
+
+      // Update notifications
+      updateNotifications(d);
+    }
+  } catch (err) {
+    console.error('Stats load failed', err);
+  }
+
+  // Load weekly bars on dashboard
+  try {
+    const wRes = await fetch('/api/analytics/weekly');
+    if (wRes.status === 401) return;
+    const wData = await wRes.json();
+    renderWeeklyBars('weeklyBars', wData);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-/* ── Demo chat (front-end only — wire to /api/chat) ── */
-function sendDemoChat(){
+function updateDonutChart(donutId, legendId, distribution, totalEntries) {
+  const donut = document.getElementById(donutId);
+  const legend = document.getElementById(legendId);
+  if (!donut || !legend || !distribution || distribution.length === 0) return;
+
+  const colors = ['var(--coral-deep)', 'var(--blue-deep)', 'var(--yellow-deep)', 'var(--green-deep)', '#D9CFC0'];
+  let gradientString = [];
+  let legendHtml = '';
+  let currentPct = 0;
+
+  for (let i = 0; i < Math.min(distribution.length, 5); i++) {
+    const item = distribution[i];
+    const itemPct = (item.count / totalEntries) * 100;
+    const c = colors[i % colors.length];
+
+    gradientString.push(`${c} ${currentPct}% ${currentPct + itemPct}%`);
+    currentPct += itemPct;
+
+    legendHtml += `<div class="legend-row"><span class="label"><span class="dot" style="background:${c}"></span>${item.emoji || ''} ${item.mood}</span><span class="pct">${Math.round(itemPct)}%</span></div>`;
+  }
+  if (currentPct < 100) {
+    gradientString.push(`#D9CFC0 ${currentPct}% 100%`);
+  }
+
+  donut.style.background = `conic-gradient(${gradientString.join(', ')})`;
+  legend.innerHTML = legendHtml;
+}
+
+function renderWeeklyBars(containerId, wData) {
+  const weeklyBars = document.getElementById(containerId);
+  if (!weeklyBars || !wData || wData.length === 0) return;
+
+  const max = Math.max(...wData.map(x => x.count), 1);
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+  weeklyBars.innerHTML = days.map(dayName => {
+    const b = wData.find(x => x._id === dayName) || { count: 0, positive_count: 0, negative_count: 0 };
+    const pct = (b.count / max) * 100;
+    const c = b.count > 0 ? ((b.positive_count || 0) >= (b.negative_count || 0) ? 'var(--green-deep)' : 'var(--coral-deep)') : 'var(--line)';
+    return `
+      <div class="bar-col">
+        <div class="bar" style="height:${Math.max(pct, 3)}%;background:${c};"></div>
+        <span>${dayName.substring(0, 3)}</span>
+      </div>`;
+  }).join('');
+}
+
+/* ── Load Insights Data ── */
+async function loadInsightsData() {
+  try {
+    const wRes = await fetch('/api/analytics/weekly');
+    if (wRes.status === 401) return;
+    const wData = await wRes.json();
+    renderWeeklyBars('weeklyBars2', wData);
+  } catch (err) {
+    console.error(err);
+  }
+
+  // Insights donut
+  try {
+    const sRes = await fetch('/api/stats');
+    if (sRes.status === 401) return;
+    const sData = await sRes.json();
+    if (sData.has_data && sData.distribution) {
+      updateDonutChart('insightsDonut', 'insightsLegend', sData.distribution, sData.total_entries);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
+  // Activity correlations
+  try {
+    const aRes = await fetch('/api/analytics/activities');
+    if (aRes.status === 401) return;
+    const aData = await aRes.json();
+    const el = document.getElementById('activityCorrelations');
+    if (el && aData.length > 0) {
+      el.innerHTML = aData.map(a => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);">
+          <span style="font-weight:800;font-size:14px;">${a._id}</span>
+          <div style="display:flex;gap:14px;font-size:13px;color:var(--ink-soft);">
+            <span style="color:${a.positive_ratio > 0.5 ? 'var(--green-deep)' : 'var(--coral-deep)'};font-weight:800;">${Math.round(a.positive_ratio * 100)}% positive</span>
+            <span>${a.count}× logged</span>
+            <span>avg ${a.avg_intensity.toFixed(1)}/10</span>
+          </div>
+        </div>
+      `).join('');
+    } else if (el) {
+      el.innerHTML = '<p style="color:var(--ink-soft);">Log moods with activities to unlock correlations here.</p>';
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/* ── Profile ── */
+async function loadProfile() {
+  try {
+    const res = await fetch('/api/profile');
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const user = await res.json();
+
+    document.getElementById('profileName').value = user.display_name || '';
+    document.getElementById('profileEmail').value = user.email || '';
+    document.getElementById('profileBio').value = user.bio || '';
+
+    if (user.avatar_url) {
+      const label = document.getElementById('profileAvatarLabel');
+      const placeholder = document.getElementById('profileAvatarPlaceholder');
+      if (placeholder) placeholder.remove();
+      const existing = label.querySelector('img');
+      if (existing) existing.remove();
+      const img = document.createElement('img');
+      img.src = user.avatar_url;
+      label.prepend(img);
+    }
+  } catch (err) {
+    console.error('Profile load failed', err);
+  }
+}
+
+async function saveProfile() {
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        display_name: document.getElementById('profileName').value.trim(),
+        email: document.getElementById('profileEmail').value.trim(),
+        bio: document.getElementById('profileBio').value.trim(),
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      showToast('Profile updated! ✨', 'success');
+      // Update sidebar
+      const nameEl = document.getElementById('sidebarDisplayName');
+      if (nameEl && data.user.display_name) nameEl.textContent = data.user.display_name;
+    } else {
+      showToast('Failed to update profile', 'error');
+    }
+  } catch (err) {
+    showToast('Error saving profile', 'error');
+  }
+}
+
+async function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Preview immediately
+  const url = URL.createObjectURL(file);
+  const label = document.getElementById('profileAvatarLabel');
+  const placeholder = document.getElementById('profileAvatarPlaceholder');
+  if (placeholder) placeholder.remove();
+  const existing = label.querySelector('img');
+  if (existing) existing.remove();
+  const img = document.createElement('img');
+  img.src = url;
+  label.prepend(img);
+
+  // Upload to server
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch('/api/profile/avatar', {
+      method: 'POST',
+      body: formData
+    });
+    if (res.ok) {
+      const data = await res.json();
+      showToast('Avatar updated! 📸', 'success');
+
+      // Update sidebar avatar
+      const sideAvatar = document.getElementById('sidebarAvatar');
+      if (sideAvatar) {
+        const sp = document.getElementById('avatarPlaceholder');
+        if (sp) sp.remove();
+        const oldImg = sideAvatar.querySelector('img');
+        if (oldImg) oldImg.remove();
+        const newImg = document.createElement('img');
+        newImg.src = data.avatar_url;
+        sideAvatar.prepend(newImg);
+      }
+    } else {
+      showToast('Failed to upload avatar', 'error');
+    }
+  } catch (err) {
+    showToast('Error uploading avatar', 'error');
+  }
+}
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded', () => {
+  setGreeting();
+  handleSearch('');
+  loadMusicRecommendation();
+  loadDashboardStats();
+  loadSidebarAvatar();
+});
+
+async function loadSidebarAvatar() {
+  try {
+    const res = await fetch('/api/profile');
+    if (res.status === 401) return;
+    const user = await res.json();
+    if (user.avatar_url) {
+      const sideAvatar = document.getElementById('sidebarAvatar');
+      if (sideAvatar) {
+        const sp = document.getElementById('avatarPlaceholder');
+        if (sp) sp.remove();
+        const img = document.createElement('img');
+        img.src = user.avatar_url;
+        sideAvatar.prepend(img);
+      }
+    }
+  } catch (err) {}
+}
+
+/* ── Log mood ── */
+let selectedMood = null;
+function pickMood(btn) {
+  document.querySelectorAll('.mood-opt').forEach(b => b.classList.remove('picked'));
+  btn.classList.add('picked');
+  selectedMood = btn.dataset.mood;
+}
+
+function toggleChip(btn) {
+  btn.classList.toggle('on');
+}
+
+async function submitMood() {
+  if (!selectedMood) {
+    showToast("Please pick a mood first.", "error");
+    return;
+  }
+  const btn = document.getElementById('saveMoodBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const intensity = document.getElementById('intSlider').value;
+  const note = document.getElementById('noteInput').value;
+  const activities = [...document.querySelectorAll('#actGroup .chip.on')].map(c => c.dataset.val);
+
+  try {
+    const res = await fetch('/api/mood', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mood: selectedMood,
+        intensity: parseInt(intensity),
+        note: note,
+        activities: activities,
+        tags: []
+      })
+    });
+
+    if (res.ok) {
+      // Reset form
+      document.querySelectorAll('.mood-opt').forEach(b => b.classList.remove('picked'));
+      document.querySelectorAll('#actGroup .chip').forEach(c => c.classList.remove('on'));
+      selectedMood = null;
+      document.getElementById('intSlider').value = 5;
+      document.getElementById('intVal').textContent = '5';
+      document.getElementById('noteInput').value = '';
+      showToast("Mood logged successfully! ✨", "success");
+
+      loadDashboardStats();
+      handleSearch('');
+
+      go('dashboard', document.querySelector('.nav-item[data-section="dashboard"]'));
+    } else {
+      showToast("Failed to log mood", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("Error logging mood", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Entry';
+  }
+}
+
+/* ── Chat ── */
+let chatThreadId = "thread_" + Date.now();
+async function sendChat() {
   const input = document.getElementById('chatInput');
   const msg = input.value.trim();
-  if(!msg) return;
+  if (!msg) return;
   const log = document.getElementById('chatLog');
-  log.insertAdjacentHTML('beforeend', `<div class="msg user"><div class="av">🙂</div><div class="bubble">${msg}</div></div>`);
-  input.value='';
+
+  // User message
+  log.insertAdjacentHTML('beforeend', `<div class="msg user"><div class="av">🙂</div><div class="bubble">${escapeHtml(msg)}</div></div>`);
+  input.value = '';
   log.scrollTop = log.scrollHeight;
-  setTimeout(()=>{
-    log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble">This is a front-end demo reply — connect this panel to your /api/chat endpoint for real answers.</div></div>`);
+
+  // Loading indicator
+  const typingId = "typing_" + Date.now();
+  log.insertAdjacentHTML('beforeend', `<div class="msg bot" id="${typingId}"><div class="av">🧠</div><div class="bubble">Thinking...</div></div>`);
+  log.scrollTop = log.scrollHeight;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        thread_id: chatThreadId,
+        include_analysis: true
+      })
+    });
+    const data = await res.json();
+
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    // Proper markdown parsing
+    let replyHtml = data.reply
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+    log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble">${replyHtml}</div></div>`);
     log.scrollTop = log.scrollHeight;
-  }, 500);
+  } catch (err) {
+    console.error(err);
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble">Oops, I had a brain fart. Try again?</div></div>`);
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ── Logout ── */
+async function handleLogout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  } catch (err) {
+    window.location.href = '/login';
+  }
+}
+
+/* ── Toast ── */
+function showToast(msg, type) {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> <span>${msg}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 </script>
 </body>

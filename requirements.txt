@@ -7,3 +7,6 @@ requests
 langchain
 langgraph
 langchain-groq
+motor
+bcrypt
+itsdangerous
