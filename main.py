@@ -17,6 +17,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr
 from music_recommender import recommend_music
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
+
+from agent_tools import chat_with_agent, stream_chat_with_agent, get_music_recommendation
 
 from database import (
     connect_db, close_db, add_mood_entry, get_recent_moods,
@@ -502,21 +505,25 @@ async def api_chat(req: ChatRequest, request: Request):
     if not user:
         raise HTTPException(401, "Not authenticated")
 
-    try:
-        mood_context = None
-        if req.include_analysis:
-            mood_context = await get_comprehensive_analysis(user["_id"])
+    mood_context = None
+    if req.include_analysis:
+        mood_context = await get_comprehensive_analysis(user["_id"])
 
-        reply = await chat_with_agent(
+    async def token_generator():
+        # Iterate over the async generator from the agent
+        async for token in stream_chat_with_agent(
             message=req.message,
             thread_id=req.thread_id,
             mood_context=mood_context,
-        )
+        ):
+            # If you want to use Server-Sent Events (SSE), format it as:
+            # yield f"data: {token}\n\n"
+            
+            # For raw text chunk streaming:
+            yield token
 
-        return ChatResponse(reply=reply, thread_id=req.thread_id)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # Return the StreamingResponse
+    return StreamingResponse(token_generator(), media_type="text/plain")
 
 
 @app.get("/api/recommendation/music")

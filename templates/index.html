@@ -1261,37 +1261,61 @@ async function sendChat() {
   const typingId = "typing_" + Date.now();
   log.insertAdjacentHTML('beforeend', `<div class="msg bot" id="${typingId}"><div class="av">🧠</div><div class="bubble">Thinking...</div></div>`);
   log.scrollTop = log.scrollHeight;
-
   try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: msg,
-        thread_id: chatThreadId,
-        include_analysis: true
-      })
-    });
-    const data = await res.json();
+      // Make sure the URL matches your FastAPI streaming endpoint (e.g., /api/chat/stream)
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          thread_id: chatThreadId,
+          include_analysis: true
+        })
+      });
 
-    const typingEl = document.getElementById(typingId);
-    if (typingEl) typingEl.remove();
+      // Remove the typing indicator once the request connects
+      const typingEl = document.getElementById(typingId);
+      if (typingEl) typingEl.remove();
 
-    // Proper markdown parsing
-    let replyHtml = data.reply
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
-    log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble">${replyHtml}</div></div>`);
-    log.scrollTop = log.scrollHeight;
-  } catch (err) {
-    console.error(err);
-    const typingEl = document.getElementById(typingId);
-    if (typingEl) typingEl.remove();
-    log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble">Oops, I had a brain fart. Try again?</div></div>`);
-    log.scrollTop = log.scrollHeight;
+      // Create a new, empty bubble for the bot's incoming message
+      // We give it a unique ID so we can inject text into it chunk by chunk
+      const streamBubbleId = `stream-${Date.now()}`;
+      log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble" id="${streamBubbleId}"></div></div>`);
+      const bubbleEl = document.getElementById(streamBubbleId);
+      
+      // Set up the stream reader
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let fullText = "";
+
+      // Read the stream continuously until it's done
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Decode the raw bytes into text and append to our running total
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+
+        // Re-apply markdown formatting to the accumulated text
+        let replyHtml = fullText
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/\n/g, '<br>');
+
+        // Update the UI
+        bubbleEl.innerHTML = replyHtml;
+        log.scrollTop = log.scrollHeight;
+      }
+
+    } catch (err) {
+      console.error(err);
+      const typingEl = document.getElementById(typingId);
+      if (typingEl) typingEl.remove();
+      log.insertAdjacentHTML('beforeend', `<div class="msg bot"><div class="av">🧠</div><div class="bubble">Oops, I had a brain fart. Try again?</div></div>`);
+      log.scrollTop = log.scrollHeight;
+    }
   }
-}
 
 function escapeHtml(str) {
   const d = document.createElement('div');
