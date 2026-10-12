@@ -540,7 +540,7 @@ async def health():
         "status": "cooking 🍳",
         "version": "3.0.0",
         "database": "MongoDB",
-        "ai": "Groq LLaMA 4",
+        "ai": "Nemotron 3 Ultra",
     }
 
 

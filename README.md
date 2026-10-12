@@ -2,7 +2,7 @@
 
 > Track vibes. Analyze patterns. Chat with AI. Discover music.
 
-MOODJOURNAL is a full-stack mood tracking application featuring a high-performance FastAPI backend, asynchronous MongoDB storage, an integrated AI emotional wellness companion powered by Groq and LLaMA 4, and **free iTunes-powered music recommendations** — no third-party music account or API key required.
+MOODJOURNAL is a full-stack mood tracking application featuring a high-performance FastAPI backend, asynchronous MongoDB storage, an integrated AI emotional wellness companion powered by Nemotron 3 Ultra via OpenRouter, and **free iTunes-powered music recommendations** — no third-party music account or API key required.
 
 ---
 
@@ -24,7 +24,7 @@ MOODJOURNAL is a full-stack mood tracking application featuring a high-performan
 | **Backend** | FastAPI, Python 3.x, Pydantic |
 | **Authentication** | bcrypt, itsdangerous (Session Cookies) |
 | **Database** | MongoDB (Async via Motor) |
-| **AI / LLM** | LangChain, LangGraph, Groq API (Meta LLaMA 4 Scout) |
+| **AI / LLM** | LangChain, LangGraph, OpenRouter API (Nemotron 3 Ultra) |
 | **Music API** | Apple iTunes Search API (free, no key needed) |
 | **Frontend** | HTML5, CSS3, Vanilla JavaScript (Jinja2 Templates) |
 
@@ -124,7 +124,7 @@ Create a `.env` file in the project root with the following:
 ```env
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DB=moodboard
-GROQ_API_KEY=your_groq_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
 > **Note:** No music-related credentials are needed. The iTunes Search API is completely free and public.
@@ -166,7 +166,7 @@ graph TD
 
     subgraph External [External Services]
         Mongo[(MongoDB)]
-        Groq["Groq API (LLaMA 4 Scout)"]
+        OpenRouter["OpenRouter API (Nemotron 3 Ultra)"]
         iTunes["iTunes Search API (Free)"]
     end
 
@@ -177,13 +177,13 @@ graph TD
     Main -->|User message + DB context| Agent
     Main -->|Mood string| Music
     DB_Layer <-->|Motor Async| Mongo
-    Agent <-->|LLM Invocation| Groq
+    Agent <-->|LLM Invocation| OpenRouter
     Music -->|Free REST API| iTunes
 
     class HTML,JS frontend;
     class Main,DB_Layer,Agent,Music backend;
     class Mongo database;
-    class Groq ai;
+    class OpenRouter ai;
     class iTunes music;
 ```
 
@@ -195,7 +195,7 @@ graph TD
 |---|---|---|
 | `MONGODB_URI` | ✅ Yes | MongoDB connection string |
 | `MONGODB_DB` | ✅ Yes | MongoDB database name |
-| `GROQ_API_KEY` | ✅ Yes | Groq API key for LLaMA 4 |
+| `OPENROUTER_API_KEY` | ✅ Yes | OpenRouter API key for Nemotron 3 Ultra |
 | `SECRET_KEY` | ❌ No | Secret key for signing session cookies |
 
 > 🎵 No music API keys are needed. iTunes Search is free and open.

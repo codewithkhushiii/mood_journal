@@ -6,7 +6,7 @@ python-multipart
 requests
 langchain
 langgraph
-langchain-groq
+langchain-openai
 motor
 bcrypt
 itsdangerous

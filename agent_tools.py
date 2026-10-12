@@ -8,7 +8,7 @@ import json
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -16,9 +16,10 @@ from langgraph.prebuilt import create_react_agent
 load_dotenv()
 
 # ─── Model Setup ──────────────────────────────────────────────
-model = ChatGroq(
-    model="meta-llama/llama-4-scout-17b-16e-instruct",
-    api_key=os.getenv("GROQ_API_KEY"),
+model = ChatOpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    model="google/gemma-4-26b-a4b-it:free",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.7,
     max_tokens=2048,
 )
